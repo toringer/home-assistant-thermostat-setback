@@ -11,6 +11,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_state_change
 from homeassistant.helpers.restore_state import RestoreEntity
+from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     ATTR_IS_SETBACK,
@@ -22,6 +23,7 @@ from .const import (
     CONF_SETBACK_TEMPERATURE,
     DOMAIN,
 )
+from .coordinator import ClimateSetbackCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
@@ -32,17 +34,20 @@ async def async_setup_entry(
     async_add_entities: AddEntitiesCallback,
 ) -> None:
     """Set up climate setback switch from a config entry."""
-    async_add_entities([ClimateSetbackSwitch(config_entry)])
+    coordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
+    async_add_entities([ClimateSetbackSwitch(config_entry, coordinator)])
 
 
-class ClimateSetbackSwitch(SwitchEntity, RestoreEntity):
+class ClimateSetbackSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
     """Representation of a climate setback switch entity."""
 
     _attr_should_poll = False
 
-    def __init__(self, config_entry: ConfigEntry) -> None:
+    def __init__(self, config_entry: ConfigEntry, coordinator: ClimateSetbackCoordinator) -> None:
         """Initialize the climate setback switch."""
+        super().__init__(coordinator, context=config_entry.entry_id)
         self._config_entry = config_entry
+        self.coordinator = coordinator
         self._attr_name = f"{config_entry.data[CONF_CLIMATE_DEVICE].replace('climate.', '').replace('_', ' ').title()} Setback"
         self._attr_unique_id = f"climate_setback_switch_{config_entry.entry_id}"
 
@@ -181,6 +186,7 @@ class ClimateSetbackSwitch(SwitchEntity, RestoreEntity):
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on (enable setback)."""
+        self.coordinator.set_setback(True)
         self._is_setback = True
         self._is_manually_controlled = True
         self._target_temperature = self._setback_temperature
@@ -189,6 +195,7 @@ class ClimateSetbackSwitch(SwitchEntity, RestoreEntity):
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the switch off (disable setback)."""
+        self.coordinator.set_setback(False)
         self._is_setback = False
         self._is_manually_controlled = True
         self._target_temperature = self._normal_temperature
