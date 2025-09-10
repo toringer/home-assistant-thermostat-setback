@@ -1,17 +1,16 @@
-"""Sensor entity for climate setback integration."""
+"""Switch entity for climate setback integration."""
 
 from __future__ import annotations
 
 import logging
 from typing import Any
 
-from homeassistant.components.sensor import SensorEntity
+from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_state_change
 from homeassistant.helpers.restore_state import RestoreEntity
-from homeassistant.const import STATE_OFF, STATE_ON
 
 from .const import (
     ATTR_IS_SETBACK,
@@ -22,8 +21,6 @@ from .const import (
     CONF_SCHEDULE_DEVICE,
     CONF_SETBACK_TEMPERATURE,
     DOMAIN,
-    SERVICE_CLEAR_SETBACK,
-    SERVICE_SET_SETBACK,
 )
 
 _LOGGER = logging.getLogger(__name__)
@@ -34,20 +31,20 @@ async def async_setup_entry(
     config_entry: ConfigEntry,
     async_add_entities: AddEntitiesCallback,
 ) -> None:
-    """Set up climate setback sensor from a config entry."""
-    async_add_entities([ClimateSetbackSensor(config_entry)])
+    """Set up climate setback switch from a config entry."""
+    async_add_entities([ClimateSetbackSwitch(config_entry)])
 
 
-class ClimateSetbackSensor(SensorEntity, RestoreEntity):
-    """Representation of a climate setback sensor entity."""
+class ClimateSetbackSwitch(SwitchEntity, RestoreEntity):
+    """Representation of a climate setback switch entity."""
 
     _attr_should_poll = False
 
     def __init__(self, config_entry: ConfigEntry) -> None:
-        """Initialize the climate setback sensor."""
+        """Initialize the climate setback switch."""
         self._config_entry = config_entry
-        self._attr_name = f"{config_entry.data[CONF_CLIMATE_DEVICE].replace('climate.', '').replace('_', ' ').title()} Setback Status"
-        self._attr_unique_id = f"climate_setback_sensor_{config_entry.entry_id}"
+        self._attr_name = f"{config_entry.data[CONF_CLIMATE_DEVICE].replace('climate.', '').replace('_', ' ').title()} Setback"
+        self._attr_unique_id = f"climate_setback_switch_{config_entry.entry_id}"
 
         # Configuration
         self._climate_device = config_entry.data[CONF_CLIMATE_DEVICE]
@@ -57,18 +54,14 @@ class ClimateSetbackSensor(SensorEntity, RestoreEntity):
 
         # State
         self._is_setback = False
+        self._is_manually_controlled = False
         self._target_temperature = self._normal_temperature
         self._current_temperature = None
 
     @property
-    def native_value(self) -> str:
-        """Return the current setback status."""
-        return STATE_ON if self._is_setback else STATE_OFF
-
-    @property
-    def native_unit_of_measurement(self) -> str | None:
-        """Return the unit of measurement."""
-        return None
+    def is_on(self) -> bool:
+        """Return True if the switch is on (setback is active)."""
+        return self._is_setback
 
     async def async_added_to_hass(self) -> None:
         """Run when entity about to be added to hass."""
@@ -76,14 +69,18 @@ class ClimateSetbackSensor(SensorEntity, RestoreEntity):
 
         # Register this entity in the domain data
         if self._config_entry.entry_id in self.hass.data[DOMAIN]:
-            self.hass.data[DOMAIN][self._config_entry.entry_id]["entities"]["sensor"] = self
+            self.hass.data[DOMAIN][self._config_entry.entry_id]["entities"]["switch"] = self
 
         # Restore state
         if (last_state := await self.async_get_last_state()) is not None:
             self._is_setback = last_state.attributes.get(
                 ATTR_IS_SETBACK, False)
+            self._is_manually_controlled = last_state.attributes.get(
+                "is_manually_controlled", False
+            )
             self._target_temperature = last_state.attributes.get(
-                "target_temperature", self._normal_temperature)
+                "target_temperature", self._normal_temperature
+            )
 
         # Track climate device state changes
         self.async_on_remove(
@@ -124,22 +121,23 @@ class ClimateSetbackSensor(SensorEntity, RestoreEntity):
         if new_state is None:
             return
 
-        # Only auto-control if not manually controlled by switch
-        if not self.is_manually_controlled():
-            # Check if schedule is active (assuming schedule entity has 'is_on' attribute)
+        # Only auto-control if not manually controlled
+        if not self._is_manually_controlled:
+            # Check if schedule is active
             schedule_active = new_state.state == "on" or new_state.attributes.get(
-                "is_on", False)
+                "is_on", False
+            )
 
             if schedule_active and not self._is_setback:
                 # Schedule is active, enable setback
                 self._is_setback = True
                 self._target_temperature = self._setback_temperature
-                self._async_control_climate()
+                self._async_update_sensor()
             elif not schedule_active and self._is_setback:
                 # Schedule is inactive, disable setback
                 self._is_setback = False
                 self._target_temperature = self._normal_temperature
-                self._async_control_climate()
+                self._async_update_sensor()
 
         self.async_write_ha_state()
 
@@ -152,35 +150,20 @@ class ClimateSetbackSensor(SensorEntity, RestoreEntity):
                 self._current_temperature = climate_state.attributes["current_temperature"]
 
         # Get current schedule state
-        if not self.is_manually_controlled():
+        if not self._is_manually_controlled:
             schedule_state = self.hass.states.get(self._schedule_device)
             if schedule_state:
                 schedule_active = schedule_state.state == "on" or schedule_state.attributes.get(
-                    "is_on", False)
+                    "is_on", False
+                )
                 if schedule_active and not self._is_setback:
                     self._is_setback = True
                     self._target_temperature = self._setback_temperature
-                    self._async_control_climate()
+                    self._async_update_sensor()
                 elif not schedule_active and self._is_setback:
                     self._is_setback = False
                     self._target_temperature = self._normal_temperature
-                    self._async_control_climate()
-
-    @callback
-    def _async_control_climate(self) -> None:
-        """Control the climate device."""
-        from homeassistant.const import ATTR_TEMPERATURE
-
-        self.hass.async_create_task(
-            self.hass.services.async_call(
-                "climate",
-                "set_temperature",
-                {
-                    "entity_id": self._climate_device,
-                    ATTR_TEMPERATURE: self._target_temperature,
-                },
-            )
-        )
+                    self._async_update_sensor()
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
@@ -193,22 +176,40 @@ class ClimateSetbackSensor(SensorEntity, RestoreEntity):
             "current_temperature": self._current_temperature,
             "climate_device": self._climate_device,
             "schedule_device": self._schedule_device,
+            "is_manually_controlled": self._is_manually_controlled,
         }
 
-    def update_setback_state(self, is_setback: bool, target_temperature: float) -> None:
-        """Update setback state from switch entity."""
-        self._is_setback = is_setback
-        self._target_temperature = target_temperature
-        self._async_control_climate()
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Turn the switch on (enable setback)."""
+        self._is_setback = True
+        self._is_manually_controlled = True
+        self._target_temperature = self._setback_temperature
+        self._async_update_sensor()
         self.async_write_ha_state()
 
-    def is_manually_controlled(self) -> bool:
-        """Check if the switch is in manual control mode."""
-        # Get the switch entity from stored reference
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Turn the switch off (disable setback)."""
+        self._is_setback = False
+        self._is_manually_controlled = True
+        self._target_temperature = self._normal_temperature
+        self._async_update_sensor()
+        self.async_write_ha_state()
+
+    @callback
+    def _async_update_sensor(self) -> None:
+        """Update the corresponding sensor entity."""
+        # Get the sensor entity from stored reference
         if self._config_entry.entry_id in self.hass.data[DOMAIN]:
             entities = self.hass.data[DOMAIN][self._config_entry.entry_id].get(
                 "entities", {})
-            switch_entity = entities.get("switch")
-            if switch_entity and hasattr(switch_entity, "_is_manually_controlled"):
-                return switch_entity._is_manually_controlled
-        return False
+            sensor_entity = entities.get("sensor")
+            if sensor_entity and hasattr(sensor_entity, "update_setback_state"):
+                sensor_entity.update_setback_state(
+                    self._is_setback, self._target_temperature)
+
+    async def async_reset_manual_control(self) -> None:
+        """Reset to automatic control based on schedule."""
+        self._is_manually_controlled = False
+        # Update state based on current schedule
+        await self._async_update_state()
+        self.async_write_ha_state()
