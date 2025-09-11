@@ -9,7 +9,7 @@ from homeassistant.components.switch import SwitchEntity
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.event import async_track_state_change
+from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -94,18 +94,18 @@ class ClimateSetbackSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
 
         # Track climate device state changes
         self.async_on_remove(
-            async_track_state_change(
+            async_track_state_change_event(
                 self.hass,
-                self._climate_device,
+                [self._climate_device],
                 self._async_climate_changed,
             )
         )
 
         # Track schedule device state changes
         self.async_on_remove(
-            async_track_state_change(
+            async_track_state_change_event(
                 self.hass,
-                self._schedule_device,
+                [self._schedule_device],
                 self._async_schedule_changed,
             )
         )
@@ -114,8 +114,9 @@ class ClimateSetbackSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
         await self._async_update_state()
 
     @callback
-    def _async_climate_changed(self, entity_id: str, old_state: Any, new_state: Any) -> None:
+    def _async_climate_changed(self, event: Any) -> None:
         """Handle climate device state changes."""
+        new_state = event.data.get("new_state")
         if new_state is None:
             return
 
@@ -126,8 +127,9 @@ class ClimateSetbackSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
         self.async_write_ha_state()
 
     @callback
-    def _async_schedule_changed(self, entity_id: str, old_state: Any, new_state: Any) -> None:
+    def _async_schedule_changed(self, event: Any) -> None:
         """Handle schedule device state changes."""
+        new_state = event.data.get("new_state")
         if new_state is None:
             return
 

@@ -9,7 +9,7 @@ from homeassistant.components.climate import ATTR_TEMPERATURE
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
-from homeassistant.helpers.event import async_track_state_change
+from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .const import (
@@ -63,16 +63,16 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
     async def async_setup(self) -> None:
         """Set up the coordinator."""
         # Track climate device state changes
-        self._unsub_climate = async_track_state_change(
+        self._unsub_climate = async_track_state_change_event(
             self.hass,
-            self._climate_device,
+            [self._climate_device],
             self._async_climate_changed,
         )
 
         # Track schedule device state changes
-        self._unsub_schedule = async_track_state_change(
+        self._unsub_schedule = async_track_state_change_event(
             self.hass,
-            self._schedule_device,
+            [self._schedule_device],
             self._async_schedule_changed,
         )
 
@@ -84,8 +84,9 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
             self._unsub_schedule()
 
     @callback
-    def _async_climate_changed(self, entity_id: str, old_state: Any, new_state: Any) -> None:
+    def _async_climate_changed(self, event: Any) -> None:
         """Handle climate device state changes."""
+        new_state = event.data.get("new_state")
         if new_state is None:
             return
 
@@ -93,8 +94,9 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         self.async_update_listeners()
 
     @callback
-    def _async_schedule_changed(self, entity_id: str, old_state: Any, new_state: Any) -> None:
+    def _async_schedule_changed(self, event: Any) -> None:
         """Handle schedule device state changes."""
+        new_state = event.data.get("new_state")
         if new_state is None:
             return
         self.data["is_setback"] = new_state.state == "on" or new_state.attributes.get(
