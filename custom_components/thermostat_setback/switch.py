@@ -19,9 +19,7 @@ from .const import (
     ATTR_NORMAL_TEMPERATURE,
     ATTR_SETBACK_TEMPERATURE,
     CONF_CLIMATE_DEVICE,
-    CONF_NORMAL_TEMPERATURE,
     CONF_SCHEDULE_DEVICE,
-    CONF_SETBACK_TEMPERATURE,
     DOMAIN,
 )
 from .coordinator import ClimateSetbackCoordinator
@@ -59,13 +57,10 @@ class ClimateSetbackSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
         # Configuration
         self._climate_device = config_entry.data[CONF_CLIMATE_DEVICE]
         self._schedule_device = config_entry.data[CONF_SCHEDULE_DEVICE]
-        self._setback_temperature = config_entry.data[CONF_SETBACK_TEMPERATURE]
-        self._normal_temperature = config_entry.data[CONF_NORMAL_TEMPERATURE]
 
         # State
         self._is_setback = False
         self._is_manually_controlled = False
-        self._target_temperature = self._normal_temperature
         self._current_temperature = None
 
     @property
@@ -87,9 +82,6 @@ class ClimateSetbackSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
                 ATTR_IS_SETBACK, False)
             self._is_manually_controlled = last_state.attributes.get(
                 "is_manually_controlled", False
-            )
-            self._target_temperature = last_state.attributes.get(
-                "target_temperature", self._normal_temperature
             )
 
         # Track climate device state changes
@@ -143,12 +135,10 @@ class ClimateSetbackSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
             if schedule_active and not self._is_setback:
                 # Schedule is active, enable setback
                 self._is_setback = True
-                self._target_temperature = self._setback_temperature
                 self._async_update_sensor()
             elif not schedule_active and self._is_setback:
                 # Schedule is inactive, disable setback
                 self._is_setback = False
-                self._target_temperature = self._normal_temperature
                 self._async_update_sensor()
 
         self.async_write_ha_state()
@@ -170,34 +160,16 @@ class ClimateSetbackSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
                 )
                 if schedule_active and not self._is_setback:
                     self._is_setback = True
-                    self._target_temperature = self._setback_temperature
                     self._async_update_sensor()
                 elif not schedule_active and self._is_setback:
                     self._is_setback = False
-                    self._target_temperature = self._normal_temperature
                     self._async_update_sensor()
-
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        """Return the state attributes."""
-        return {
-            ATTR_IS_SETBACK: self._is_setback,
-            ATTR_SETBACK_TEMPERATURE: self._setback_temperature,
-            ATTR_NORMAL_TEMPERATURE: self._normal_temperature,
-            ATTR_CONTROLLER_ACTIVE: self.coordinator.controller_active,
-            "target_temperature": self._target_temperature,
-            "current_temperature": self._current_temperature,
-            "climate_device": self._climate_device,
-            "schedule_device": self._schedule_device,
-            "is_manually_controlled": self._is_manually_controlled,
-        }
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on (enable setback)."""
         self.coordinator.set_setback(True)
         self._is_setback = True
         self._is_manually_controlled = True
-        self._target_temperature = self._setback_temperature
         self._async_update_sensor()
         self.async_write_ha_state()
 
@@ -206,7 +178,6 @@ class ClimateSetbackSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
         self.coordinator.set_setback(False)
         self._is_setback = False
         self._is_manually_controlled = True
-        self._target_temperature = self._normal_temperature
         self._async_update_sensor()
         self.async_write_ha_state()
 
@@ -218,9 +189,6 @@ class ClimateSetbackSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
             entities = self.hass.data[DOMAIN][self._config_entry.entry_id].get(
                 "entities", {})
             sensor_entity = entities.get("sensor")
-            if sensor_entity and hasattr(sensor_entity, "update_setback_state"):
-                sensor_entity.update_setback_state(
-                    self._is_setback, self._target_temperature)
 
     async def async_reset_manual_control(self) -> None:
         """Reset to automatic control based on schedule."""

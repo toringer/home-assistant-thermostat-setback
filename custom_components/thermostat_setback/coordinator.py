@@ -14,9 +14,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
 from .const import (
     CONF_CLIMATE_DEVICE,
-    CONF_NORMAL_TEMPERATURE,
     CONF_SCHEDULE_DEVICE,
-    CONF_SETBACK_TEMPERATURE,
     DOMAIN,
 )
 
@@ -31,8 +29,10 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         self.config_entry = config_entry
         self._climate_device = config_entry.data[CONF_CLIMATE_DEVICE]
         self._schedule_device = config_entry.data[CONF_SCHEDULE_DEVICE]
-        self._setback_temperature = config_entry.data[CONF_SETBACK_TEMPERATURE]
-        self._normal_temperature = config_entry.data[CONF_NORMAL_TEMPERATURE]
+
+        # Default temperature values
+        self._default_normal_temperature = 20.0
+        self._default_setback_temperature = 16.0
 
         # Store unsubscribe callbacks
         self._unsub_climate = None
@@ -45,13 +45,13 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
             update_interval=None,  # We update on state changes, not on schedule
         )
 
-        # Initialize data structure
+        # Initialize data structure with default values
         self.data = {
             "is_setback": False,
             "forced_setback": False,
             "controller_active": True,  # Controller is active by default
-            "setback_temperature": self._setback_temperature,
-            "normal_temperature": self._normal_temperature,
+            "setback_temperature": self._default_setback_temperature,
+            "normal_temperature": self._default_normal_temperature,
         }
 
     async def _async_update_data(self) -> dict[str, Any]:
@@ -124,23 +124,6 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
                 },
             )
         )
-
-        # # Only auto-control if not manually controlled
-        # if not self.data["is_manually_controlled"]:
-        #     # Check if schedule is active
-        #     schedule_active = new_state.state == "on" or new_state.attributes.get(
-        #         "is_on", False)
-
-        #     if schedule_active and not self.data["is_setback"]:
-        #         # Schedule is active, enable setback
-        #         self.hass.async_create_task(
-        #             self.async_set_setback(True, forced=False))
-        #     elif not schedule_active and self.data["is_setback"] and not self.data["forced_setback"]:
-        #         # Schedule is inactive, disable setback (only if not forced)
-        #         self.hass.async_create_task(
-        #             self.async_set_setback(False, forced=False))
-
-    # set setback
 
     def set_setback(self, is_setback: bool) -> None:
         """Set setback."""

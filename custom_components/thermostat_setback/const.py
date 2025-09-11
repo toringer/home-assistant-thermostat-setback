@@ -7,8 +7,6 @@ DOMAIN = "thermostat_setback"
 # Configuration keys
 CONF_CLIMATE_DEVICE = "climate_device"
 CONF_SCHEDULE_DEVICE = "schedule_device"
-CONF_SETBACK_TEMPERATURE = "setback_temperature"
-CONF_NORMAL_TEMPERATURE = "normal_temperature"
 
 # Service names
 SERVICE_SET_SETBACK = "set_setback"

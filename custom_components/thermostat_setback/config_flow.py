@@ -15,9 +15,7 @@ from homeassistant.helpers import config_validation as cv
 
 from .const import (
     CONF_CLIMATE_DEVICE,
-    CONF_NORMAL_TEMPERATURE,
     CONF_SCHEDULE_DEVICE,
-    CONF_SETBACK_TEMPERATURE,
     DOMAIN,
 )
 
@@ -35,34 +33,6 @@ def get_user_data_schema() -> vol.Schema:
             vol.Required(CONF_SCHEDULE_DEVICE, description={"suggested_value": "Select a schedule device to monitor"}): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain="schedule")
             ),
-            vol.Required(CONF_SETBACK_TEMPERATURE, description={"suggested_value": "Temperature when in setback mode (e.g., 16.0)"}): vol.Coerce(float),
-            vol.Required(CONF_NORMAL_TEMPERATURE, description={"suggested_value": "Normal temperature when not in setback (e.g., 20.0)"}): vol.Coerce(float),
-        }
-    )
-
-
-def get_options_schema(config_entry: config_entries.ConfigEntry) -> vol.Schema:
-    """Return the options schema with translations."""
-    return vol.Schema(
-        {
-            vol.Required(
-                CONF_SETBACK_TEMPERATURE,
-                default=config_entry.options.get(
-                    CONF_SETBACK_TEMPERATURE,
-                    config_entry.data[CONF_SETBACK_TEMPERATURE],
-                ),
-                description={
-                    "suggested_value": "Temperature when in setback mode (e.g., 16.0)"}
-            ): vol.Coerce(float),
-            vol.Required(
-                CONF_NORMAL_TEMPERATURE,
-                default=config_entry.options.get(
-                    CONF_NORMAL_TEMPERATURE,
-                    config_entry.data[CONF_NORMAL_TEMPERATURE],
-                ),
-                description={
-                    "suggested_value": "Normal temperature when not in setback (e.g., 20.0)"}
-            ): vol.Coerce(float),
         }
     )
 
@@ -100,42 +70,6 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 errors={"base": "schedule_device_not_found"},
             )
 
-        # Validate temperature values
-        if user_input[CONF_SETBACK_TEMPERATURE] >= user_input[CONF_NORMAL_TEMPERATURE]:
-            return self.async_show_form(
-                step_id="user",
-                data_schema=get_user_data_schema(),
-                errors={"base": "invalid_temperature_range"},
-            )
-
         return self.async_create_entry(
             title=user_input[CONF_NAME], data=user_input
-        )
-
-    @staticmethod
-    @callback
-    def async_get_options_flow(
-        config_entry: config_entries.ConfigEntry,
-    ) -> OptionsFlowHandler:
-        """Get the options flow for this handler."""
-        return OptionsFlowHandler(config_entry)
-
-
-class OptionsFlowHandler(config_entries.OptionsFlow):
-    """Handle options flow for climate setback."""
-
-    def __init__(self, config_entry: config_entries.ConfigEntry) -> None:
-        """Initialize options flow."""
-        self.config_entry = config_entry
-
-    async def async_step_init(
-        self, user_input: dict[str, Any] | None = None
-    ) -> FlowResult:
-        """Manage the options."""
-        if user_input is not None:
-            return self.async_create_entry(title="", data=user_input)
-
-        return self.async_show_form(
-            step_id="init",
-            data_schema=get_options_schema(self.config_entry),
         )

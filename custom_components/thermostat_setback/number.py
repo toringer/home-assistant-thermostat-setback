@@ -14,8 +14,6 @@ from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
     CONF_CLIMATE_DEVICE,
-    CONF_NORMAL_TEMPERATURE,
-    CONF_SETBACK_TEMPERATURE,
     DOMAIN,
 )
 from .coordinator import ClimateSetbackCoordinator

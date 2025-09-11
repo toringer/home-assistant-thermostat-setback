@@ -13,9 +13,7 @@ from custom_components.thermostat_setback.const import (
     ATTR_NORMAL_TEMPERATURE,
     ATTR_SETBACK_TEMPERATURE,
     CONF_CLIMATE_DEVICE,
-    CONF_NORMAL_TEMPERATURE,
     CONF_SCHEDULE_DEVICE,
-    CONF_SETBACK_TEMPERATURE,
 )
 
 
@@ -28,9 +26,7 @@ def mock_config_entry():
     config_entry.entry_id = "test_entry"
     config_entry.data = {
         CONF_CLIMATE_DEVICE: "climate.test_thermostat",
-        CONF_SCHEDULE_DEVICE: "schedule.test_schedule",
-        CONF_SETBACK_TEMPERATURE: 18.0,
-        CONF_NORMAL_TEMPERATURE: 22.0,
+        CONF_SCHEDULE_DEVICE: "schedule.test_schedule"
     }
     return config_entry
 
