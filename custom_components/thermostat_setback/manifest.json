@@ -6,9 +6,10 @@
   ],
   "config_flow": true,
   "dependencies": [],
-  "documentation": "https://github.com/toringe/home-assistant-setback-controller",
+  "documentation": "https://github.com/toringer/home-assistant-thermostat-setback",
   "integration_type": "device",
   "iot_class": "local_polling",
+  "issue_tracker": "https://github.com/toringer/home-assistant-thermostat-setback",
   "requirements": [],
   "version": "1.0.0"
 }
