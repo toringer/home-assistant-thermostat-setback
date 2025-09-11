@@ -163,6 +163,12 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         """Return if setback is forced (manual override)."""
         return self.data["forced_setback"]
 
+    def set_forced_setback(self, forced_setback: bool) -> None:
+        """Set forced setback."""
+        self.data["forced_setback"] = forced_setback
+        self.set_climate_temperature()
+        self.async_update_listeners()
+
     @property
     def setback_temperature(self) -> float:
         """Return setback temperature."""

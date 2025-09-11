@@ -29,12 +29,12 @@ async def async_setup_entry(
     """Set up climate setback switch from a config entry."""
     coordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
     async_add_entities([
-        ClimateSetbackSwitch(config_entry, coordinator),
+        ClimateForceSetbackSwitch(config_entry, coordinator),
         ControllerSwitch(config_entry, coordinator)
     ])
 
 
-class ClimateSetbackSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
+class ClimateForceSetbackSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
     """Representation of a climate setback switch entity."""
 
     _attr_should_poll = False
@@ -44,23 +44,23 @@ class ClimateSetbackSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
         super().__init__(coordinator, context=config_entry.entry_id)
         self._config_entry = config_entry
         self.coordinator = coordinator
-        self._attr_name = f"{config_entry.data[CONF_CLIMATE_DEVICE].replace('climate.', '').replace('_', ' ').title()} Setback"
+        self._attr_name = f"{config_entry.data[CONF_CLIMATE_DEVICE].replace('climate.', '').replace('_', ' ').title()} Force Setback"
         self._attr_unique_id = f"thermostat_setback_switch_{config_entry.entry_id}"
         self._attr_device_info = coordinator.device_info
 
     @property
     def is_on(self) -> bool:
         """Return True if the switch is on (setback is active)."""
-        return self.coordinator.is_setback
+        return self.coordinator.forced_setback
 
     async def async_turn_on(self, **kwargs: Any) -> None:
         """Turn the switch on (enable setback)."""
-        self.coordinator.set_setback(True)
+        self.coordinator.set_forced_setback(True)
         self.async_write_ha_state()
 
     async def async_turn_off(self, **kwargs: Any) -> None:
         """Turn the switch off (disable setback)."""
-        self.coordinator.set_setback(False)
+        self.coordinator.set_forced_setback(False)
         self.async_write_ha_state()
 
     async def async_added_to_hass(self) -> None:
