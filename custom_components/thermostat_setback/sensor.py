@@ -10,7 +10,6 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.event import async_track_state_change
-from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -40,7 +39,7 @@ async def async_setup_entry(
     async_add_entities([ClimateSetbackSensor(config_entry, coordinator)])
 
 
-class ClimateSetbackSensor(SensorEntity, CoordinatorEntity, RestoreEntity):
+class ClimateSetbackSensor(SensorEntity, CoordinatorEntity):
     """Representation of a climate setback sensor entity."""
 
     _attr_should_poll = False
@@ -63,24 +62,6 @@ class ClimateSetbackSensor(SensorEntity, CoordinatorEntity, RestoreEntity):
     def native_unit_of_measurement(self) -> str | None:
         """Return the unit of measurement."""
         return None
-
-    # async def async_added_to_hass(self) -> None:
-    #     """Run when entity about to be added to hass."""
-    #     await super().async_added_to_hass()
-
-    #     # Register this entity in the domain data
-    #     if self._config_entry.entry_id in self.hass.data[DOMAIN]:
-    #         self.hass.data[DOMAIN][self._config_entry.entry_id]["entities"]["sensor"] = self
-
-    #     # Restore state
-    #     if (last_state := await self.async_get_last_state()) is not None:
-    #         self._is_setback = last_state.attributes.get(
-    #             ATTR_IS_SETBACK, False)
-    #         self._target_temperature = last_state.attributes.get(
-    #             "target_temperature", self._normal_temperature)
-
-    #     # Initial state update
-    #     await self._async_update_state()
 
     async def _async_update_state(self) -> None:
         """Update the entity state."""

@@ -9,7 +9,6 @@ from homeassistant.components.number import NumberEntity, NumberMode
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.restore_state import RestoreEntity
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
@@ -34,7 +33,7 @@ async def async_setup_entry(
     ])
 
 
-class SetbackTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
+class SetbackTemperatureNumber(NumberEntity, CoordinatorEntity):
     """Representation of a setback temperature number entity."""
 
     _attr_should_poll = False
@@ -58,24 +57,6 @@ class SetbackTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
         """Return the current setback temperature."""
         return self.coordinator.data["setback_temperature"]
 
-    async def async_added_to_hass(self) -> None:
-        """Run when entity about to be added to hass."""
-        await super().async_added_to_hass()
-
-        # Register this entity in the domain data
-        if self._config_entry.entry_id in self.hass.data[DOMAIN]:
-            self.hass.data[DOMAIN][self._config_entry.entry_id]["entities"]["setback_temperature"] = self
-
-        # Restore state
-        if (last_state := await self.async_get_last_state()) is not None:
-            if last_state.state is not None:
-                try:
-                    self.coordinator.data["setback_temperature"] = float(
-                        last_state.state)
-                except (ValueError, TypeError):
-                    _LOGGER.warning(
-                        "Invalid setback temperature state: %s", last_state.state)
-
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes."""
@@ -93,7 +74,7 @@ class SetbackTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
         self.async_write_ha_state()
 
 
-class NormalTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
+class NormalTemperatureNumber(NumberEntity, CoordinatorEntity):
     """Representation of a normal temperature number entity."""
 
     _attr_should_poll = False
@@ -124,16 +105,6 @@ class NormalTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
         # Register this entity in the domain data
         if self._config_entry.entry_id in self.hass.data[DOMAIN]:
             self.hass.data[DOMAIN][self._config_entry.entry_id]["entities"]["normal_temperature"] = self
-
-        # Restore state
-        if (last_state := await self.async_get_last_state()) is not None:
-            if last_state.state is not None:
-                try:
-                    self.coordinator.data["normal_temperature"] = float(
-                        last_state.state)
-                except (ValueError, TypeError):
-                    _LOGGER.warning(
-                        "Invalid normal temperature state: %s", last_state.state)
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
