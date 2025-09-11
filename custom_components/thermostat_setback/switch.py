@@ -10,6 +10,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers.restore_state import RestoreEntity
 
 from .const import (
     CONF_CLIMATE_DEVICE,
@@ -33,7 +34,7 @@ async def async_setup_entry(
     ])
 
 
-class ClimateSetbackSwitch(SwitchEntity, CoordinatorEntity):
+class ClimateSetbackSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
     """Representation of a climate setback switch entity."""
 
     _attr_should_poll = False
@@ -62,8 +63,17 @@ class ClimateSetbackSwitch(SwitchEntity, CoordinatorEntity):
         self.coordinator.set_setback(False)
         self.async_write_ha_state()
 
+    async def async_added_to_hass(self) -> None:
+        """Handle entity which will be added."""
+        await super().async_added_to_hass()
 
-class ControllerSwitch(SwitchEntity, CoordinatorEntity):
+        state = await self.async_get_last_state()
+        if not state:
+            return
+        self.coordinator.data["is_setback"] = state.state
+
+
+class ControllerSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
     """Representation of a controller active switch entity."""
 
     _attr_should_poll = False
@@ -91,3 +101,12 @@ class ControllerSwitch(SwitchEntity, CoordinatorEntity):
         """Turn the controller off (disable controller)."""
         self.coordinator.set_controller_active(False)
         self.async_write_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        """Handle entity which will be added."""
+        await super().async_added_to_hass()
+
+        state = await self.async_get_last_state()
+        if not state:
+            return
+        self.coordinator.data["controller_active"] = state.state

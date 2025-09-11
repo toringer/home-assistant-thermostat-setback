@@ -10,6 +10,7 @@ from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
+from homeassistant.helpers.restore_state import RestoreEntity
 
 from .const import (
     CONF_CLIMATE_DEVICE,
@@ -33,7 +34,7 @@ async def async_setup_entry(
     ])
 
 
-class SetbackTemperatureNumber(NumberEntity, CoordinatorEntity):
+class SetbackTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
     """Representation of a setback temperature number entity."""
 
     _attr_should_poll = False
@@ -73,8 +74,17 @@ class SetbackTemperatureNumber(NumberEntity, CoordinatorEntity):
         self.coordinator.async_update_listeners()
         self.async_write_ha_state()
 
+    async def async_added_to_hass(self) -> None:
+        """Handle entity which will be added."""
+        await super().async_added_to_hass()
 
-class NormalTemperatureNumber(NumberEntity, CoordinatorEntity):
+        state = await self.async_get_last_state()
+        if not state:
+            return
+        self.coordinator.data["setback_temperature"] = state.state
+
+
+class NormalTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
     """Representation of a normal temperature number entity."""
 
     _attr_should_poll = False
@@ -104,3 +114,12 @@ class NormalTemperatureNumber(NumberEntity, CoordinatorEntity):
         self.coordinator.set_climate_temperature()
         self.coordinator.async_update_listeners()
         self.async_write_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        """Handle entity which will be added."""
+        await super().async_added_to_hass()
+
+        state = await self.async_get_last_state()
+        if not state:
+            return
+        self.coordinator.data["normal_temperature"] = state.state
