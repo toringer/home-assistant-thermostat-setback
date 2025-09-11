@@ -54,6 +54,7 @@ class ClimateSetbackSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
         self.coordinator = coordinator
         self._attr_name = f"{config_entry.data[CONF_CLIMATE_DEVICE].replace('climate.', '').replace('_', ' ').title()} Setback"
         self._attr_unique_id = f"climate_setback_switch_{config_entry.entry_id}"
+        self._attr_device_info = coordinator.device_info
 
         # Configuration
         self._climate_device = config_entry.data[CONF_CLIMATE_DEVICE]
@@ -239,6 +240,7 @@ class ControllerSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
         self.coordinator = coordinator
         self._attr_name = f"{config_entry.data[CONF_CLIMATE_DEVICE].replace('climate.', '').replace('_', ' ').title()} Controller"
         self._attr_unique_id = f"climate_setback_controller_{config_entry.entry_id}"
+        self._attr_device_info = coordinator.device_info
 
     @property
     def is_on(self) -> bool:

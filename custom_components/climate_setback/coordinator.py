@@ -8,6 +8,7 @@ from typing import Any
 from homeassistant.components.climate import ATTR_TEMPERATURE
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.event import async_track_state_change
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 
@@ -199,3 +200,14 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
     def controller_active(self) -> bool:
         """Return if controller is active."""
         return self.data["controller_active"]
+
+    @property
+    def device_info(self) -> DeviceInfo:
+        """Return device info for this integration."""
+        return DeviceInfo(
+            identifiers={(DOMAIN, self.config_entry.entry_id)},
+            name=f"Climate Setback Controller ({self._climate_device.replace('climate.', '').replace('_', ' ').title()})",
+            manufacturer="Climate Setback Controller",
+            model="Setback Controller",
+            sw_version="1.0.0",
+        )

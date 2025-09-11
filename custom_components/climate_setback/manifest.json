@@ -1,11 +1,13 @@
 {
   "domain": "climate_setback",
   "name": "Climate Setback Controller",
-  "codeowners": ["@toringe"],
+  "codeowners": [
+    "@toringe"
+  ],
   "config_flow": true,
   "dependencies": [],
   "documentation": "https://github.com/toringe/home-assistant-setback-controller",
-  "integration_type": "helper",
+  "integration_type": "device",
   "iot_class": "local_polling",
   "requirements": [],
   "version": "1.0.0"
