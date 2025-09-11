@@ -39,9 +39,6 @@ class SetbackTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
 
     _attr_should_poll = False
     _attr_mode = NumberMode.SLIDER
-    _attr_native_min_value = 5.0
-    _attr_native_max_value = 35.0
-    _attr_native_step = 0.5
 
     def __init__(self, config_entry: ConfigEntry, coordinator: ClimateSetbackCoordinator) -> None:
         """Initialize the setback temperature number."""
@@ -57,6 +54,21 @@ class SetbackTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
     def native_value(self) -> float:
         """Return the current setback temperature."""
         return self.coordinator.data["setback_temperature"]
+
+    @property
+    def native_min_value(self) -> float:
+        """Return the current setback temperature minimum."""
+        return self.coordinator.normal_temperature_min
+
+    @property
+    def native_max_value(self) -> float:
+        """Return the current setback temperature maximum."""
+        return self.coordinator.normal_temperature_max
+
+    @property
+    def native_step(self) -> float:
+        """Return the current setback temperature step."""
+        return self.coordinator.normal_temperature_step
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
@@ -100,9 +112,20 @@ class NormalTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
         self._attr_native_unit_of_measurement = "°C"
         self._attr_device_info = coordinator.device_info
 
-        self._attr_native_min_value = coordinator.normal_temperature_min
-        self._attr_native_max_value = coordinator.normal_temperature_max
-        self._attr_native_step = coordinator.normal_temperature_step
+    @property
+    def native_min_value(self) -> float:
+        """Return the current normal temperature minimum."""
+        return self.coordinator.normal_temperature_min
+
+    @property
+    def native_max_value(self) -> float:
+        """Return the current normal temperature maximum."""
+        return self.coordinator.normal_temperature_max
+
+    @property
+    def native_step(self) -> float:
+        """Return the current normal temperature step."""
+        return self.coordinator.normal_temperature_step
 
     @property
     def native_value(self) -> float:
