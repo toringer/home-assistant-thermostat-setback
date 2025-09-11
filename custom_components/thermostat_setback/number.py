@@ -89,9 +89,6 @@ class NormalTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
 
     _attr_should_poll = False
     _attr_mode = NumberMode.SLIDER
-    _attr_native_min_value = 5.0
-    _attr_native_max_value = 35.0
-    _attr_native_step = 0.5
 
     def __init__(self, config_entry: ConfigEntry, coordinator: ClimateSetbackCoordinator) -> None:
         """Initialize the normal temperature number."""
@@ -102,6 +99,10 @@ class NormalTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
         self._attr_unique_id = f"climate_normal_temperature_{config_entry.entry_id}"
         self._attr_native_unit_of_measurement = "°C"
         self._attr_device_info = coordinator.device_info
+
+        self._attr_native_min_value = coordinator.normal_temperature_min
+        self._attr_native_max_value = coordinator.normal_temperature_max
+        self._attr_native_step = coordinator.normal_temperature_step
 
     @property
     def native_value(self) -> float:

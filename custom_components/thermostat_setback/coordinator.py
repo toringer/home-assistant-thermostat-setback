@@ -52,6 +52,9 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
             "controller_active": True,  # Controller is active by default
             "setback_temperature": self._default_setback_temperature,
             "normal_temperature": self._default_normal_temperature,
+            "normal_temperature_min": 5.0,
+            "normal_temperature_max": 35.0,
+            "normal_temperature_step": 0.5,
         }
 
     async def _async_update_data(self) -> dict[str, Any]:
@@ -89,6 +92,16 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         new_state = event.data.get("new_state")
         if new_state is None:
             return
+
+        min_temp = new_state.attributes.get("min_temp")
+        max_temp = new_state.attributes.get("max_temp")
+        step = new_state.attributes.get("target_temp_step")
+        if min_temp:
+            self.data["normal_temperature_min"] = min_temp
+        if max_temp:
+            self.data["normal_temperature_max"] = max_temp
+        if step:
+            self.data["normal_temperature_step"] = step
 
         self.set_climate_temperature()
         self.async_update_listeners()
@@ -159,6 +172,21 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
     def normal_temperature(self) -> float:
         """Return normal temperature."""
         return self.data["normal_temperature"]
+
+    @property
+    def normal_temperature_min(self) -> float:
+        """Return normal temperature minimum."""
+        return self.data["normal_temperature_min"]
+
+    @property
+    def normal_temperature_max(self) -> float:
+        """Return normal temperature maximum."""
+        return self.data["normal_temperature_max"]
+
+    @property
+    def normal_temperature_step(self) -> float:
+        """Return normal temperature step."""
+        return self.data["normal_temperature_step"]
 
     @property
     def climate_device(self) -> str:
