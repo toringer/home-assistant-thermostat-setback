@@ -7,22 +7,14 @@ from typing import Any
 
 from homeassistant.components.sensor import SensorEntity
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
-from homeassistant.helpers.event import async_track_state_change
 from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
-    ATTR_CONTROLLER_ACTIVE,
-    ATTR_IS_SETBACK,
-    ATTR_NORMAL_TEMPERATURE,
-    ATTR_SETBACK_TEMPERATURE,
     CONF_CLIMATE_DEVICE,
-    CONF_SCHEDULE_DEVICE,
     DOMAIN,
-    SERVICE_CLEAR_SETBACK,
-    SERVICE_SET_SETBACK,
 )
 from .coordinator import ClimateSetbackCoordinator
 
@@ -72,10 +64,6 @@ class ClimateSetbackSensor(SensorEntity, CoordinatorEntity):
     def extra_state_attributes(self) -> dict[str, Any]:
         """Return the state attributes."""
         return {
-            ATTR_IS_SETBACK: self.coordinator.data["is_setback"],
-            ATTR_SETBACK_TEMPERATURE: self.coordinator.setback_temperature,
-            ATTR_NORMAL_TEMPERATURE: self.coordinator.normal_temperature,
-            ATTR_CONTROLLER_ACTIVE: self.coordinator.controller_active,
             "climate_device": self.coordinator.climate_device,
             "schedule_device": self.coordinator.schedule_device,
         }

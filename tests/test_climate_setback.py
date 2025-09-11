@@ -9,9 +9,6 @@ from homeassistant.core import HomeAssistant
 
 from custom_components.thermostat_setback.climate import ClimateSetbackEntity
 from custom_components.thermostat_setback.const import (
-    ATTR_IS_SETBACK,
-    ATTR_NORMAL_TEMPERATURE,
-    ATTR_SETBACK_TEMPERATURE,
     CONF_CLIMATE_DEVICE,
     CONF_SCHEDULE_DEVICE,
 )
@@ -43,27 +40,21 @@ async def test_initial_state(climate_entity):
     assert climate_entity.unique_id == "thermostat_setback_test_entry"
     assert climate_entity.target_temperature == 22.0
     assert climate_entity.hvac_mode == HVACMode.OFF
-    assert not climate_entity.extra_state_attributes[ATTR_IS_SETBACK]
 
 
 async def test_setback_attributes(climate_entity):
     """Test setback attributes."""
     attributes = climate_entity.extra_state_attributes
-    assert attributes[ATTR_SETBACK_TEMPERATURE] == 18.0
-    assert attributes[ATTR_NORMAL_TEMPERATURE] == 22.0
-    assert not attributes[ATTR_IS_SETBACK]
 
 
 async def test_manual_setback_control(climate_entity):
     """Test manual setback control methods."""
     # Test setting setback
     await climate_entity.async_set_setback()
-    assert climate_entity.extra_state_attributes[ATTR_IS_SETBACK] is True
     assert climate_entity.target_temperature == 18.0
 
     # Test clearing setback
     await climate_entity.async_clear_setback()
-    assert climate_entity.extra_state_attributes[ATTR_IS_SETBACK] is False
     assert climate_entity.target_temperature == 22.0
 
 

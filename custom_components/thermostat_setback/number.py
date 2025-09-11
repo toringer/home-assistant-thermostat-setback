@@ -7,7 +7,7 @@ from typing import Any
 
 from homeassistant.components.number import NumberEntity, NumberMode
 from homeassistant.config_entries import ConfigEntry
-from homeassistant.core import HomeAssistant, callback
+from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
@@ -97,23 +97,6 @@ class NormalTemperatureNumber(NumberEntity, CoordinatorEntity):
     def native_value(self) -> float:
         """Return the current normal temperature."""
         return self.coordinator.data["normal_temperature"]
-
-    async def async_added_to_hass(self) -> None:
-        """Run when entity about to be added to hass."""
-        await super().async_added_to_hass()
-
-        # Register this entity in the domain data
-        if self._config_entry.entry_id in self.hass.data[DOMAIN]:
-            self.hass.data[DOMAIN][self._config_entry.entry_id]["entities"]["normal_temperature"] = self
-
-    @property
-    def extra_state_attributes(self) -> dict[str, Any]:
-        """Return the state attributes."""
-        return {
-            "climate_device": self.coordinator.climate_device,
-            "schedule_device": self.coordinator.schedule_device,
-            "controller_active": self.coordinator.controller_active,
-        }
 
     async def async_set_native_value(self, value: float) -> None:
         """Set the normal temperature."""
