@@ -15,6 +15,7 @@ from homeassistant.const import STATE_OFF, STATE_ON
 from homeassistant.helpers.update_coordinator import CoordinatorEntity
 
 from .const import (
+    ATTR_CONTROLLER_ACTIVE,
     ATTR_IS_SETBACK,
     ATTR_NORMAL_TEMPERATURE,
     ATTR_SETBACK_TEMPERATURE,
@@ -94,6 +95,7 @@ class ClimateSetbackSensor(SensorEntity, CoordinatorEntity, RestoreEntity):
             ATTR_IS_SETBACK: self.coordinator.data["is_setback"],
             ATTR_SETBACK_TEMPERATURE: self.coordinator.setback_temperature,
             ATTR_NORMAL_TEMPERATURE: self.coordinator.normal_temperature,
+            ATTR_CONTROLLER_ACTIVE: self.coordinator.controller_active,
             "climate_device": self.coordinator.climate_device,
             "schedule_device": self.coordinator.schedule_device,
         }

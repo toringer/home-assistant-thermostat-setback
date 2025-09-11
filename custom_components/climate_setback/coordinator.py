@@ -48,6 +48,7 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         self.data = {
             "is_setback": False,
             "forced_setback": False,
+            "controller_active": True,  # Controller is active by default
             "setback_temperature": self._setback_temperature,
             "normal_temperature": self._normal_temperature,
         }
@@ -103,6 +104,10 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
 
     def set_climate_temperature(self) -> None:
         """Set the climate device temperature."""
+        # Only control temperature if controller is active
+        if not self.data["controller_active"]:
+            return
+
         target_temperature = self.data["setback_temperature"] if self.data[
             "is_setback"] or self.data["forced_setback"] else self.data["normal_temperature"]
 
@@ -132,11 +137,14 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         #         self.hass.async_create_task(
         #             self.async_set_setback(False, forced=False))
 
-    # TODO self.async_update_listeners()
-
     # set setback
+
     def set_setback(self, is_setback: bool) -> None:
         """Set setback."""
+        # Only allow setback changes if controller is active
+        if not self.data["controller_active"]:
+            return
+
         # get schedule state as bool into variable
         schedule_state = self.hass.states.get(self._schedule_device)
         schedule_active = schedule_state.state == "on" or schedule_state.attributes.get(
@@ -175,3 +183,19 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
     def schedule_device(self) -> str:
         """Return schedule device entity ID."""
         return self._schedule_device
+
+    def set_controller_active(self, active: bool) -> None:
+        """Set controller active state."""
+        self.data["controller_active"] = active
+
+        # If controller is being deactivated, stop controlling temperature
+        if not active:
+            self.data["is_setback"] = False
+
+        self.set_setback(False)
+        self.async_update_listeners()
+
+    @property
+    def controller_active(self) -> bool:
+        """Return if controller is active."""
+        return self.data["controller_active"]
