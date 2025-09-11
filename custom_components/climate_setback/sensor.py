@@ -86,7 +86,7 @@ class ClimateSetbackSensor(SensorEntity, CoordinatorEntity, RestoreEntity):
     async def _async_update_state(self) -> None:
         """Update the entity state."""
         # Get current climate state
-        climate_state = self.hass.states.get(self._climate_device)
+        climate_state = self.hass.states.get(self.coordinator.climate_device)
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:

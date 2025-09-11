@@ -14,7 +14,7 @@ from .coordinator import ClimateSetbackCoordinator
 
 _LOGGER = logging.getLogger(__name__)
 
-PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.SWITCH]
+PLATFORMS: list[Platform] = [Platform.SENSOR, Platform.SWITCH, Platform.NUMBER]
 
 
 async def async_setup(hass: HomeAssistant, config: dict[str, Any]) -> bool:

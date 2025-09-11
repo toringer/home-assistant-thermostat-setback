@@ -167,12 +167,12 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
     @property
     def setback_temperature(self) -> float:
         """Return setback temperature."""
-        return self._setback_temperature
+        return self.data["setback_temperature"]
 
     @property
     def normal_temperature(self) -> float:
         """Return normal temperature."""
-        return self._normal_temperature
+        return self.data["normal_temperature"]
 
     @property
     def climate_device(self) -> str:
