@@ -11,6 +11,7 @@ from homeassistant.core import HomeAssistant, callback
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
+from homeassistant.const import CONF_NAME
 
 from .const import (
     CONF_CLIMATE_DEVICE,
@@ -27,6 +28,7 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
     def __init__(self, hass: HomeAssistant, config_entry: ConfigEntry) -> None:
         """Initialize the coordinator."""
         self.config_entry = config_entry
+        self._name = config_entry.data[CONF_NAME]
         self._climate_device = config_entry.data[CONF_CLIMATE_DEVICE]
         self._schedule_device = config_entry.data[CONF_SCHEDULE_DEVICE]
 
@@ -225,8 +227,7 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         """Return device info for this integration."""
         return DeviceInfo(
             identifiers={(DOMAIN, self.config_entry.entry_id)},
-            name=f"Thermostat Setback Controller ({self._climate_device.replace('climate.', '').replace('_', ' ').title()})",
+            name=self._name,
             manufacturer="Thermostat Setback Controller",
             model="Setback Controller",
-            sw_version="1.0.0",
         )

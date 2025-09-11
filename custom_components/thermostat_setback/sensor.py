@@ -41,7 +41,7 @@ class ClimateSetbackSensor(SensorEntity, CoordinatorEntity):
         """Initialize the climate setback sensor."""
         self._config_entry = config_entry
         self.coordinator = coordinator
-        self._attr_name = f"{config_entry.data[CONF_CLIMATE_DEVICE].replace('climate.', '').replace('_', ' ').title()} Setback Status"
+        self._attr_name = "Setback Status"
         self._attr_unique_id = f"thermostat_setback_sensor_{config_entry.entry_id}"
         self._attr_device_info = coordinator.device_info
 
