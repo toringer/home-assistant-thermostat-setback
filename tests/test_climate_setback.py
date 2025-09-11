@@ -7,8 +7,8 @@ from homeassistant.components.climate import HVACMode
 from homeassistant.const import ATTR_TEMPERATURE
 from homeassistant.core import HomeAssistant
 
-from custom_components.climate_setback.climate import ClimateSetbackEntity
-from custom_components.climate_setback.const import (
+from custom_components.thermostat_setback.climate import ClimateSetbackEntity
+from custom_components.thermostat_setback.const import (
     ATTR_IS_SETBACK,
     ATTR_NORMAL_TEMPERATURE,
     ATTR_SETBACK_TEMPERATURE,
@@ -23,7 +23,7 @@ from custom_components.climate_setback.const import (
 def mock_config_entry():
     """Mock config entry."""
     from unittest.mock import MagicMock
-    
+
     config_entry = MagicMock()
     config_entry.entry_id = "test_entry"
     config_entry.data = {
@@ -44,7 +44,7 @@ def climate_entity(mock_config_entry):
 async def test_initial_state(climate_entity):
     """Test initial state of the climate entity."""
     assert climate_entity.name == "Test Thermostat"
-    assert climate_entity.unique_id == "climate_setback_test_entry"
+    assert climate_entity.unique_id == "thermostat_setback_test_entry"
     assert climate_entity.target_temperature == 22.0
     assert climate_entity.hvac_mode == HVACMode.OFF
     assert not climate_entity.extra_state_attributes[ATTR_IS_SETBACK]

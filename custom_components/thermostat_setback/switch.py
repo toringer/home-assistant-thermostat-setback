@@ -53,7 +53,7 @@ class ClimateSetbackSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
         self._config_entry = config_entry
         self.coordinator = coordinator
         self._attr_name = f"{config_entry.data[CONF_CLIMATE_DEVICE].replace('climate.', '').replace('_', ' ').title()} Setback"
-        self._attr_unique_id = f"climate_setback_switch_{config_entry.entry_id}"
+        self._attr_unique_id = f"thermostat_setback_switch_{config_entry.entry_id}"
         self._attr_device_info = coordinator.device_info
 
         # Configuration
@@ -240,8 +240,8 @@ class ControllerSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
         super().__init__(coordinator, context=config_entry.entry_id)
         self._config_entry = config_entry
         self.coordinator = coordinator
-        self._attr_name = f"{config_entry.data[CONF_CLIMATE_DEVICE].replace('climate.', '').replace('_', ' ').title()} Controller"
-        self._attr_unique_id = f"climate_setback_controller_{config_entry.entry_id}"
+        self._attr_name = f"{config_entry.data[CONF_CLIMATE_DEVICE].replace('climate.', '').replace('_', ' ').title()} Thermostat Controller"
+        self._attr_unique_id = f"thermostat_setback_controller_{config_entry.entry_id}"
         self._attr_device_info = coordinator.device_info
 
     @property

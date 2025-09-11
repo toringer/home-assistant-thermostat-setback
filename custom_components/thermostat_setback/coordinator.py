@@ -208,8 +208,8 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         """Return device info for this integration."""
         return DeviceInfo(
             identifiers={(DOMAIN, self.config_entry.entry_id)},
-            name=f"Climate Setback Controller ({self._climate_device.replace('climate.', '').replace('_', ' ').title()})",
-            manufacturer="Climate Setback Controller",
+            name=f"Thermostat Setback Controller ({self._climate_device.replace('climate.', '').replace('_', ' ').title()})",
+            manufacturer="Thermostat Setback Controller",
             model="Setback Controller",
             sw_version="1.0.0",
         )

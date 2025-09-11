@@ -47,7 +47,7 @@ extend-exclude = '''
 profile = "black"
 multi_line_output = 3
 line_length = 88
-known_first_party = ["custom_components.climate_setback"]
+known_first_party = ["custom_components.thermostat_setback"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

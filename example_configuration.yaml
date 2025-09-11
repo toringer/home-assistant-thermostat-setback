@@ -1,4 +1,4 @@
-# Example Home Assistant configuration for Climate Setback Controller
+# Example Home Assistant configuration for Thermostat Setback Controller
 
 # Example schedule for weekday setback
 schedule:
@@ -34,9 +34,9 @@ automation:
         entity_id: person.jane
         state: "not_home"
     action:
-      - service: climate_setback.set_setback
+      - service: thermostat_setback.set_setback
         target:
-          entity_id: climate_setback.living_room_controller
+          entity_id: thermostat_setback.living_room_controller
 
   - alias: "Disable Setback When Home"
     description: "Disable setback mode when someone returns home"
@@ -48,18 +48,18 @@ automation:
         entity_id: person.jane
         to: "home"
     action:
-      - service: climate_setback.clear_setback
+      - service: thermostat_setback.clear_setback
         target:
-          entity_id: climate_setback.living_room_controller
+          entity_id: thermostat_setback.living_room_controller
 
 # Example script for manual setback control
 script:
   enable_setback:
     alias: "Enable Setback Mode"
     sequence:
-      - service: climate_setback.set_setback
+      - service: thermostat_setback.set_setback
         target:
-          entity_id: climate_setback.living_room_controller
+          entity_id: thermostat_setback.living_room_controller
       - service: notify.mobile_app_phone
         data:
           message: "Setback mode enabled - temperature set to 18°C"
@@ -67,9 +67,9 @@ script:
   disable_setback:
     alias: "Disable Setback Mode"
     sequence:
-      - service: climate_setback.clear_setback
+      - service: thermostat_setback.clear_setback
         target:
-          entity_id: climate_setback.living_room_controller
+          entity_id: thermostat_setback.living_room_controller
       - service: notify.mobile_app_phone
         data:
           message: "Setback mode disabled - temperature set to 22°C"
@@ -97,11 +97,11 @@ template:
   - sensor:
       - name: "Setback Status"
         state: >
-          {% if is_state('climate_setback.living_room_controller', 'heat') %}
-            {% if state_attr('climate_setback.living_room_controller', 'is_setback') %}
-              Setback Active ({{ state_attr('climate_setback.living_room_controller', 'setback_temperature') }}°C)
+          {% if is_state('thermostat_setback.living_room_controller', 'heat') %}
+            {% if state_attr('thermostat_setback.living_room_controller', 'is_setback') %}
+              Setback Active ({{ state_attr('thermostat_setback.living_room_controller', 'setback_temperature') }}°C)
             {% else %}
-              Normal Mode ({{ state_attr('climate_setback.living_room_controller', 'normal_temperature') }}°C)
+              Normal Mode ({{ state_attr('thermostat_setback.living_room_controller', 'normal_temperature') }}°C)
             {% endif %}
           {% else %}
             Off

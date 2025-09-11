@@ -2,7 +2,7 @@
 
 from __future__ import annotations
 
-DOMAIN = "climate_setback"
+DOMAIN = "thermostat_setback"
 
 # Configuration keys
 CONF_CLIMATE_DEVICE = "climate_device"

@@ -1,6 +1,6 @@
 {
-  "domain": "climate_setback",
-  "name": "Climate Setback Controller",
+  "domain": "thermostat_setback",
+  "name": "Thermostat Setback Controller",
   "codeowners": [
     "@toringe"
   ],

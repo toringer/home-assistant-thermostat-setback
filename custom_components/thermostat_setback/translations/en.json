@@ -2,8 +2,8 @@
     "config": {
         "step": {
             "user": {
-                "title": "Climate Setback Controller",
-                "description": "Configure your climate setback controller by selecting the climate device and schedule to control, and setting the temperature values.",
+                "title": "Thermostat Setback Controller",
+                "description": "Configure your thermostat setback controller by selecting the climate device and schedule to control, and setting the temperature values.",
                 "data": {
                     "name": "Name",
                     "climate_device": "Climate Device",
@@ -14,7 +14,7 @@
             },
             "init": {
                 "title": "Options",
-                "description": "Adjust the temperature settings for your climate setback controller.",
+                "description": "Adjust the temperature settings for your thermostat setback controller.",
                 "data": {
                     "setback_temperature": "Setback Temperature",
                     "normal_temperature": "Normal Temperature"
@@ -27,14 +27,14 @@
             "invalid_temperature_range": "Setback temperature must be lower than normal temperature."
         },
         "abort": {
-            "already_configured": "This climate setback controller is already configured."
+            "already_configured": "This thermostat setback controller is already configured."
         }
     },
     "options": {
         "step": {
             "init": {
-                "title": "Climate Setback Controller Options",
-                "description": "Adjust the temperature settings for your climate setback controller.",
+                "title": "Thermostat Setback Controller Options",
+                "description": "Adjust the temperature settings for your thermostat setback controller.",
                 "data": {
                     "setback_temperature": "Setback Temperature",
                     "normal_temperature": "Normal Temperature"

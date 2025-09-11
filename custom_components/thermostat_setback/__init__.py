@@ -1,4 +1,4 @@
-"""Climate Setback Controller for Home Assistant."""
+"""Thermostat Setback Controller for Home Assistant."""
 
 from __future__ import annotations
 

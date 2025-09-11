@@ -37,18 +37,18 @@ jobs:
         uses: actions/upload-artifact@v4.6.2
         if: ${{ github.event_name == 'push' }}
         with:
-          name: climate_setback
-          path: ${{ github.workspace }}/custom_components/climate_setback
+          name: thermostat_setback
+          path: ${{ github.workspace }}/custom_components/thermostat_setback
 
       # Pack the dir as a zip and upload to the release
       - name: 📦 ZIP Dir
         if: ${{ github.event_name == 'release' }}
         run: |
-          cd ${{ github.workspace }}/custom_components/climate_setback
-          zip climate_setback.zip -r ./
+          cd ${{ github.workspace }}/custom_components/thermostat_setback
+          zip thermostat_setback.zip -r ./
 
       - name: 📤 Upload zip to release
         uses: softprops/action-gh-release@v2
         if: ${{ github.event_name == 'release' }}
         with:
-          files: ${{ github.workspace }}/custom_components/climate_setback/climate_setback.zip
+          files: ${{ github.workspace }}/custom_components/thermostat_setback/thermostat_setback.zip

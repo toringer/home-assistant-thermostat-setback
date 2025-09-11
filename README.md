@@ -1,4 +1,4 @@
-# Climate Setback Controller
+# Thermostat Setback Controller
 
 A Home Assistant custom component that automatically controls climate devices based on schedule devices, implementing temperature setback functionality.
 
@@ -15,12 +15,12 @@ A Home Assistant custom component that automatically controls climate devices ba
 ### Method 1: HACS (Recommended)
 
 1. Add this repository to HACS as a custom repository
-2. Install "Climate Setback Controller" from HACS
+2. Install "Thermostat Setback Controller" from HACS
 3. Restart Home Assistant
 
 ### Method 2: Manual Installation
 
-1. Copy the `custom_components/climate_setback` folder to your Home Assistant `custom_components` directory
+1. Copy the `custom_components/thermostat_setback` folder to your Home Assistant `custom_components` directory
 2. Restart Home Assistant
 3. Add the integration through the UI
 
@@ -30,7 +30,7 @@ A Home Assistant custom component that automatically controls climate devices ba
 
 1. Go to **Settings** > **Devices & Services**
 2. Click **Add Integration**
-3. Search for "Climate Setback Controller"
+3. Search for "Thermostat Setback Controller"
 4. Configure the following settings:
    - **Name**: A friendly name for your setback controller
    - **Climate Device**: The climate entity to control (e.g., `climate.living_room_thermostat`)
@@ -73,14 +73,14 @@ You can manually control setback mode using services:
 
 ```yaml
 # Enable setback mode
-service: climate_setback.set_setback
+service: thermostat_setback.set_setback
 target:
-  entity_id: climate_setback.living_room_controller
+  entity_id: thermostat_setback.living_room_controller
 
 # Disable setback mode
-service: climate_setback.clear_setback
+service: thermostat_setback.clear_setback
 target:
-  entity_id: climate_setback.living_room_controller
+  entity_id: thermostat_setback.living_room_controller
 ```
 
 ### Automation Examples
@@ -94,9 +94,9 @@ automation:
         entity_id: person.john
         to: "not_home"
     action:
-      - service: climate_setback.set_setback
+      - service: thermostat_setback.set_setback
         target:
-          entity_id: climate_setback.living_room_controller
+          entity_id: thermostat_setback.living_room_controller
 
 # Automatically disable setback when returning home
 automation:
@@ -106,9 +106,9 @@ automation:
         entity_id: person.john
         to: "home"
     action:
-      - service: climate_setback.clear_setback
+      - service: thermostat_setback.clear_setback
         target:
-          entity_id: climate_setback.living_room_controller
+          entity_id: thermostat_setback.living_room_controller
 ```
 
 ## Entity Attributes
@@ -136,7 +136,7 @@ This project uses a dev container for development. To get started:
 ### Project Structure
 
 ```
-custom_components/climate_setback/
+custom_components/thermostat_setback/
 ├── __init__.py          # Main integration setup
 ├── climate.py           # Climate entity implementation
 ├── config_flow.py       # Configuration flow
@@ -161,7 +161,7 @@ Enable debug logging by adding this to your `configuration.yaml`:
 ```yaml
 logger:
   logs:
-    custom_components.climate_setback: debug
+    custom_components.thermostat_setback: debug
 ```
 
 ## Contributing

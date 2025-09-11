@@ -28,7 +28,7 @@ def get_user_data_schema() -> vol.Schema:
     """Return the user data schema with translations."""
     return vol.Schema(
         {
-            vol.Required(CONF_NAME, description={"suggested_value": "Climate Setback Controller"}): cv.string,
+            vol.Required(CONF_NAME, description={"suggested_value": "Thermostat Setback Controller"}): cv.string,
             vol.Required(CONF_CLIMATE_DEVICE, description={"suggested_value": "Select a climate device to control"}): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain="climate")
             ),
