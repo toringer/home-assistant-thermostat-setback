@@ -1,0 +1,7 @@
+{
+    "name": "Thermostat Setback Controller",
+    "homeassistant": "2025.1.0",
+    "zip_release": true,
+    "filename": "thermostat_setback.zip",
+    "render_readme": true
+}
