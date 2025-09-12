@@ -14,6 +14,7 @@ from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
 from homeassistant.const import CONF_NAME
 
 from .const import (
+    CONF_BINARY_INPUT,
     CONF_CLIMATE_DEVICE,
     CONF_SCHEDULE_DEVICE,
     DOMAIN,
@@ -31,6 +32,7 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         self._name = config_entry.data[CONF_NAME]
         self._climate_device = config_entry.data[CONF_CLIMATE_DEVICE]
         self._schedule_device = config_entry.data[CONF_SCHEDULE_DEVICE]
+        self._binary_input = config_entry.data.get(CONF_BINARY_INPUT)
 
         # Default temperature values
         self._default_normal_temperature = 20.0
@@ -39,6 +41,7 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         # Store unsubscribe callbacks
         self._unsub_climate = None
         self._unsub_schedule = None
+        self._unsub_binary_input = None
 
         super().__init__(
             hass,
@@ -81,12 +84,22 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
             self._async_schedule_changed,
         )
 
+        # Track binary input state changes if configured
+        if self._binary_input:
+            self._unsub_binary_input = async_track_state_change_event(
+                self.hass,
+                [self._binary_input],
+                self._async_binary_input_changed,
+            )
+
     def async_cleanup(self) -> None:
         """Clean up the coordinator."""
         if self._unsub_climate:
             self._unsub_climate()
         if self._unsub_schedule:
             self._unsub_schedule()
+        if self._unsub_binary_input:
+            self._unsub_binary_input()
 
     @callback
     def _async_climate_changed(self, event: Any) -> None:
@@ -116,6 +129,23 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
             return
         self.data["is_setback"] = new_state.state == "on" or new_state.attributes.get(
             "is_on", False)
+
+        self.set_climate_temperature()
+        self.async_update_listeners()
+
+    @callback
+    def _async_binary_input_changed(self, event: Any) -> None:
+        """Handle binary input state changes."""
+        new_state = event.data.get("new_state")
+        if new_state is None:
+            return
+
+        # Check if binary input is active (on/true/1)
+        is_active = new_state.state in [
+            "on", "true", "1"] or new_state.attributes.get("is_on", False)
+
+        # Set forced setback based on binary input state
+        self.data["forced_setback"] = is_active
 
         self.set_climate_temperature()
         self.async_update_listeners()
@@ -205,6 +235,11 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
     def schedule_device(self) -> str:
         """Return schedule device entity ID."""
         return self._schedule_device
+
+    @property
+    def binary_input_device(self) -> str | None:
+        """Return binary input device entity ID."""
+        return self._binary_input
 
     def set_controller_active(self, active: bool) -> None:
         """Set controller active state."""

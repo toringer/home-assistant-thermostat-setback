@@ -13,6 +13,7 @@ from homeassistant.helpers import selector
 from homeassistant.helpers import config_validation as cv
 
 from .const import (
+    CONF_BINARY_INPUT,
     CONF_CLIMATE_DEVICE,
     CONF_SCHEDULE_DEVICE,
     DOMAIN,
@@ -31,6 +32,10 @@ def get_user_data_schema() -> vol.Schema:
             ),
             vol.Required(CONF_SCHEDULE_DEVICE, description={"suggested_value": "Select a schedule device to monitor"}): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain="schedule")
+            ),
+            vol.Optional(CONF_BINARY_INPUT, description={"suggested_value": "Select a binary input or switch for forced mode"}): selector.EntitySelector(
+                selector.EntitySelectorConfig(
+                    domain=["binary_sensor", "switch"])
             ),
         }
     )
@@ -68,6 +73,16 @@ class ConfigFlow(config_entries.ConfigFlow, domain=DOMAIN):
                 data_schema=get_user_data_schema(),
                 errors={"base": "schedule_device_not_found"},
             )
+
+        # Validate binary input if provided
+        if CONF_BINARY_INPUT in user_input and user_input[CONF_BINARY_INPUT]:
+            binary_entity_id = user_input[CONF_BINARY_INPUT]
+            if not self.hass.states.get(binary_entity_id):
+                return self.async_show_form(
+                    step_id="user",
+                    data_schema=get_user_data_schema(),
+                    errors={"base": "binary_input_not_found"},
+                )
 
         return self.async_create_entry(
             title=user_input[CONF_NAME], data=user_input

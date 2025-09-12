@@ -8,6 +8,7 @@
                     "name": "Name",
                     "climate_device": "Climate Device",
                     "schedule_device": "Schedule Device",
+                    "binary_input": "Device to control the forced setback mode (optional)",
                     "setback_temperature": "Setback Temperature",
                     "normal_temperature": "Normal Temperature"
                 }
@@ -16,6 +17,9 @@
                 "title": "Options",
                 "description": "Adjust the temperature settings for your thermostat setback controller.",
                 "data": {
+                    "climate_device": "Climate Device",
+                    "schedule_device": "Schedule Device",
+                    "binary_input": "Device to control the forced setback mode (optional)",
                     "setback_temperature": "Setback Temperature",
                     "normal_temperature": "Normal Temperature"
                 }
@@ -24,6 +28,7 @@
         "error": {
             "climate_device_not_found": "The selected climate device was not found. Please select a valid climate device.",
             "schedule_device_not_found": "The selected schedule device was not found. Please select a valid schedule device.",
+            "binary_input_not_found": "The selected binary input device was not found. Please select a valid binary sensor or switch.",
             "invalid_temperature_range": "Setback temperature must be lower than normal temperature."
         },
         "abort": {
@@ -34,8 +39,11 @@
         "step": {
             "init": {
                 "title": "Thermostat Setback Controller Options",
-                "description": "Adjust the temperature settings for your thermostat setback controller.",
+                "description": "Adjust the settings for your thermostat setback controller.",
                 "data": {
+                    "climate_device": "Climate Device",
+                    "schedule_device": "Schedule Device",
+                    "binary_input": "Device to control the forced setback mode (optional)",
                     "setback_temperature": "Setback Temperature",
                     "normal_temperature": "Normal Temperature"
                 }
