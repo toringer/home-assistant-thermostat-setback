@@ -8,13 +8,17 @@
 
 # Thermostat Setback Controller
 
-A thermostat setback controller for climate devices in Home Assistant.
+**Simple, automated thermostat setback control without complex automation setup.**
 
-## Features
+Stop wrestling with complex Home Assistant automations for your thermostat! This controller makes temperature setback management effortless - just set it up once and it handles everything automatically.
 
-- **Automatic Setback Control**: Automatically switches between normal and setback temperatures based on a schedule helper device
-- **Manual Override**: Force setback using a manual override.
-- **External Override**: Activate forced setback mode by monitoring a binary sensor or switch entity
+## Why Choose This Controller?
+
+- **No Complex Automation Required**: Forget about writing YAML automations or dealing with complex logic
+- **One-Time Setup**: Configure once through the UI and it works forever
+- **Smart & Automatic**: Seamlessly switches between normal and setback temperatures based on your schedule
+- **Manual Control When Needed**: Override anytime with simple controls
+- **External Integration**: Works with any binary sensor or switch for additional control
 
 <p align="center">
 <img width="350" alt="Thermostat Setback Controller" src="https://raw.githubusercontent.com/toringer/home-assistant-thermostat-setback/master/assets/device.png">
@@ -35,28 +39,27 @@ A thermostat setback controller for climate devices in Home Assistant.
 2. Restart Home Assistant
 3. Add the integration through the UI
 
-## Configuration
+## Quick Setup (2 Minutes!)
 
-### Adding the Integration
+### Step 1: Add the Integration
 
 1. Go to **Settings** > **Devices & Services**
 2. Click **Add Integration**
 3. Search for "Thermostat Setback Controller"
-4. Configure the following settings:
-   - **Name**: A friendly name for your setback controller
-   - **Climate Device**: The climate entity to control (e.g., `climate.living_room_thermostat`)
-   - **Schedule Device**: The schedule entity that defines when setback should be active
-   - **Forced Setback Monitoring Sensor**: Use an another entity to control the forced setback mode
+4. Fill in these simple settings:
+   - **Name**: Give it a friendly name (e.g., "Living Room Setback")
+   - **Climate Device**: Pick your thermostat (e.g., `climate.living_room_thermostat`)
+   - **Schedule Device**: Choose your schedule helper (defines when setback is active)
+   - **Forced Setback Monitoring Sensor**: Optional - use any switch/sensor for manual control forced setback
 
+### Step 2: That's It!
 
+The controller immediately starts working:
+- ✅ **Automatically** switches to setback temperature when your schedule is active
+- ✅ **Automatically** returns to normal temperature when schedule is inactive
+- ✅ **No YAML needed** - everything is handled through the UI
+- ✅ **Works forever** - set it and forget it!
 
-### Automatic Operation
-
-The component automatically:
-- Monitors the schedule device state
-- Switches to setback temperature when schedule is active
-- Returns to normal temperature when schedule is inactive
-- Controls the target temperature of the climate device
 
 ## Development
 
