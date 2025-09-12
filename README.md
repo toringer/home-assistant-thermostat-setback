@@ -1,14 +1,21 @@
+[![GitHub Release][releases-shield]][releases]
+[![Total downloads][total-downloads-shield]][total-downloads]
+[![Latest release downloads][latest-release-downloads-shield]][latest-release-downloads]
+
+<p align="right">
+<img width="250" alt="Logo" src="https://raw.githubusercontent.com/toringer/home-assistant-thermostat-setback/master/assets/icon.png">
+</p>
+
 # Thermostat Setback Controller
 
-A Home Assistant custom component that automatically controls climate devices based on schedule devices, implementing temperature setback functionality.
+A thermostat setback controller for climate devices in Home Assistant.
 
 ## Features
 
-- **Automatic Setback Control**: Automatically switches between normal and setback temperatures based on schedule device state
-- **Manual Override**: Services to manually enable/disable setback mode
-- **Configurable Temperatures**: Set custom normal and setback temperatures
-- **Schedule Integration**: Works with any Home Assistant schedule entity
-- **Climate Device Support**: Compatible with any Home Assistant climate entity
+- **Automatic Setback Control**: Automatically switches between normal and setback temperatures based on a schedule helper device
+- **Manual Override**: Force setback using a manual override.
+- **External Override**: Activate forced setback mode by monitoring a configured binary sensor
+
 
 ## Installation
 
@@ -35,29 +42,9 @@ A Home Assistant custom component that automatically controls climate devices ba
    - **Name**: A friendly name for your setback controller
    - **Climate Device**: The climate entity to control (e.g., `climate.living_room_thermostat`)
    - **Schedule Device**: The schedule entity that defines when setback should be active
-   - **Setback Temperature**: Temperature to set when schedule is active (e.g., 18°C)
-   - **Normal Temperature**: Temperature to set when schedule is inactive (e.g., 22°C)
+   - **Forced Setback Monitoring Sensor**: Use an another entity to control the forced setback mode
 
-### Example Configuration
 
-```yaml
-# Example schedule for weekday setback
-schedule:
-  weekday_setback:
-    name: "Weekday Setback"
-    mode: restart
-    actions:
-      - service: schedule.turn_on
-        data:
-          entity_id: schedule.weekday_setback
-        time: "22:00:00"
-      - service: schedule.turn_off
-        data:
-          entity_id: schedule.weekday_setback
-        time: "06:00:00"
-```
-
-## Usage
 
 ### Automatic Operation
 
@@ -66,64 +53,6 @@ The component automatically:
 - Switches to setback temperature when schedule is active
 - Returns to normal temperature when schedule is inactive
 - Controls the target temperature of the climate device
-
-### Manual Control
-
-You can manually control setback mode using services:
-
-```yaml
-# Enable setback mode
-service: thermostat_setback.set_setback
-target:
-  entity_id: thermostat_setback.living_room_controller
-
-# Disable setback mode
-service: thermostat_setback.clear_setback
-target:
-  entity_id: thermostat_setback.living_room_controller
-```
-
-### Automation Examples
-
-```yaml
-# Automatically enable setback when leaving home
-automation:
-  - alias: "Enable Setback When Away"
-    trigger:
-      - platform: state
-        entity_id: person.john
-        to: "not_home"
-    action:
-      - service: thermostat_setback.set_setback
-        target:
-          entity_id: thermostat_setback.living_room_controller
-
-# Automatically disable setback when returning home
-automation:
-  - alias: "Disable Setback When Home"
-    trigger:
-      - platform: state
-        entity_id: person.john
-        to: "home"
-    action:
-      - service: thermostat_setback.clear_setback
-        target:
-          entity_id: thermostat_setback.living_room_controller
-```
-
-## Entity Attributes
-
-The climate setback entity exposes the following attributes:
-
-- `is_setback`: Boolean indicating if setback mode is currently active
-- `setback_temperature`: The configured setback temperature
-- `normal_temperature`: The configured normal temperature
-
-## Requirements
-
-- Home Assistant 2023.1.0 or later
-- A climate entity (thermostat, heat pump, etc.)
-- A schedule entity or any entity with on/off state
 
 ## Development
 
@@ -147,12 +76,6 @@ custom_components/thermostat_setback/
 ```
 
 ## Troubleshooting
-
-### Common Issues
-
-1. **Climate device not responding**: Ensure the climate device is properly configured and accessible
-2. **Schedule not triggering**: Check that the schedule device is working correctly
-3. **Temperature not changing**: Verify that the climate device supports temperature control
 
 ### Debugging
 
@@ -179,3 +102,11 @@ This project is licensed under the MIT License - see the LICENSE file for detail
 ## Support
 
 For support, please open an issue on the GitHub repository.
+
+
+[releases-shield]: https://img.shields.io/github/v/release/toringer/home-assistant-thermostat-setback?style=flat-square
+[releases]: https://github.com/toringer/home-assistant-thermostat-setback/releases
+[total-downloads-shield]: https://img.shields.io/github/downloads/toringer/home-assistant-thermostat-setback/total?style=flat-square
+[total-downloads]: https://github.com/toringer/home-assistant-thermostat-setback
+[latest-release-downloads-shield]: https://img.shields.io/github/downloads/toringer/home-assistant-thermostat-setback/latest/total?style=flat-square
+[latest-release-downloads]: https://github.com/toringer/home-assistant-thermostat-setback
