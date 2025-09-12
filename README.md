@@ -14,7 +14,7 @@ A thermostat setback controller for climate devices in Home Assistant.
 
 - **Automatic Setback Control**: Automatically switches between normal and setback temperatures based on a schedule helper device
 - **Manual Override**: Force setback using a manual override.
-- **External Override**: Activate forced setback mode by monitoring a configured binary sensor
+- **External Override**: Activate forced setback mode by monitoring a binary sensor or switch entity
 
 
 ## Installation
