@@ -8,7 +8,7 @@
                     "name": "Name",
                     "climate_device": "Climate Device",
                     "schedule_device": "Schedule Device",
-                    "binary_input": "Device to control the forced setback mode (optional)",
+                    "binary_input": "Device to control the forced setback mode",
                     "setback_temperature": "Setback Temperature",
                     "normal_temperature": "Normal Temperature"
                 }
@@ -19,7 +19,7 @@
                 "data": {
                     "climate_device": "Climate Device",
                     "schedule_device": "Schedule Device",
-                    "binary_input": "Device to control the forced setback mode (optional)",
+                    "binary_input": "Device to control the forced setback mode",
                     "setback_temperature": "Setback Temperature",
                     "normal_temperature": "Normal Temperature"
                 }
@@ -43,7 +43,7 @@
                 "data": {
                     "climate_device": "Climate Device",
                     "schedule_device": "Schedule Device",
-                    "binary_input": "Device to control the forced setback mode (optional)",
+                    "binary_input": "Device to control the forced setback mode",
                     "setback_temperature": "Setback Temperature",
                     "normal_temperature": "Normal Temperature"
                 }
