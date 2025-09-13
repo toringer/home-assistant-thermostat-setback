@@ -31,8 +31,8 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         self.config_entry = config_entry
         self._name = config_entry.data[CONF_NAME]
         self._climate_device = config_entry.data[CONF_CLIMATE_DEVICE]
-        self._schedule_device = config_entry.data[CONF_SCHEDULE_DEVICE]
-        self._binary_input = config_entry.data.get(CONF_BINARY_INPUT)
+        self._schedule_device = config_entry.options[CONF_SCHEDULE_DEVICE]
+        self._binary_input = config_entry.options.get(CONF_BINARY_INPUT, None)
 
         # Store unsubscribe callbacks
         self._unsub_climate = None

@@ -61,4 +61,5 @@ class ClimateSetbackSensor(SensorEntity, CoordinatorEntity):
         return {
             "climate_device": self.coordinator.climate_device,
             "schedule_device": self.coordinator.schedule_device,
+            "binary_input_device": self.coordinator.binary_input_device,
         }
