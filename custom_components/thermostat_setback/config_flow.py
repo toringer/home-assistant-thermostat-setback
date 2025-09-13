@@ -34,7 +34,7 @@ def get_initial_config_schema() -> vol.Schema:
             vol.Required(CONF_SCHEDULE_DEVICE, description={"suggested_value": "Select a schedule device to monitor"}): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain="schedule")
             ),
-            vol.Optional(CONF_BINARY_INPUT, description={"suggested_value": "Select a binary input or switch for forced mode"}): selector.EntitySelector(
+            vol.Required(CONF_BINARY_INPUT, description={"suggested_value": "Select a binary input or switch for forced mode"}): selector.EntitySelector(
                 selector.EntitySelectorConfig(
                     domain=["binary_sensor", "switch"])
             ),
@@ -49,7 +49,7 @@ def get_options_schema() -> vol.Schema:
             vol.Required(CONF_SCHEDULE_DEVICE, description={"suggested_value": "Select a schedule device to monitor"}): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain="schedule")
             ),
-            vol.Optional(CONF_BINARY_INPUT, description={"suggested_value": "Select a binary input or switch for forced mode"}): selector.EntitySelector(
+            vol.Required(CONF_BINARY_INPUT, description={"suggested_value": "Select a binary input or switch for forced mode"}): selector.EntitySelector(
                 selector.EntitySelectorConfig(
                     domain=["binary_sensor", "switch"])
             ),
