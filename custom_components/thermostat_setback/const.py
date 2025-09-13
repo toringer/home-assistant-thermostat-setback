@@ -8,7 +8,3 @@ DOMAIN = "thermostat_setback"
 CONF_CLIMATE_DEVICE = "climate_device"
 CONF_SCHEDULE_DEVICE = "schedule_device"
 CONF_BINARY_INPUT = "binary_input"
-
-# Service names
-SERVICE_SET_SETBACK = "set_setback"
-SERVICE_CLEAR_SETBACK = "clear_setback"

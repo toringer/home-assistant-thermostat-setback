@@ -34,10 +34,6 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         self._schedule_device = config_entry.data[CONF_SCHEDULE_DEVICE]
         self._binary_input = config_entry.data.get(CONF_BINARY_INPUT)
 
-        # Default temperature values
-        self._default_normal_temperature = 20.0
-        self._default_setback_temperature = 16.0
-
         # Store unsubscribe callbacks
         self._unsub_climate = None
         self._unsub_schedule = None
@@ -53,10 +49,13 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         # Initialize data structure with default values
         self.data = {
             "is_setback": False,
+            "schedule_active": False,
+
             "forced_setback": False,
+            "input_is_active": False,
             "controller_active": True,  # Controller is active by default
-            "setback_temperature": self._default_setback_temperature,
-            "normal_temperature": self._default_normal_temperature,
+            "setback_temperature": 20,
+            "normal_temperature": 16,
             "normal_temperature_min": 5.0,
             "normal_temperature_max": 35.0,
             "normal_temperature_step": 0.5,
@@ -108,6 +107,7 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         if new_state is None:
             return
 
+        # Get min, max and step attributes from the climate device
         min_temp = new_state.attributes.get("min_temp")
         max_temp = new_state.attributes.get("max_temp")
         step = new_state.attributes.get("target_temp_step")
@@ -118,7 +118,7 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         if step:
             self.data["normal_temperature_step"] = step
 
-        self.set_climate_temperature()
+        self._calculate_setback_state()
         self.async_update_listeners()
 
     @callback
@@ -127,10 +127,12 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         new_state = event.data.get("new_state")
         if new_state is None:
             return
-        self.data["is_setback"] = new_state.state == "on" or new_state.attributes.get(
+
+        # Activate setback if schedule is active
+        self.data["schedule_active"] = new_state.state == "on" or new_state.attributes.get(
             "is_on", False)
 
-        self.set_climate_temperature()
+        self._calculate_setback_state()
         self.async_update_listeners()
 
     @callback
@@ -140,24 +142,23 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         if new_state is None:
             return
 
-        # Check if binary input is active (on/true/1)
-        is_active = new_state.state in [
+        # Set input is active based on binary input state (on/true/1)
+        self.data["input_is_active"] = new_state.state in [
             "on", "true", "1"] or new_state.attributes.get("is_on", False)
 
-        # Set forced setback based on binary input state
-        self.data["forced_setback"] = is_active
-
-        self.set_climate_temperature()
+        self._calculate_setback_state()
         self.async_update_listeners()
 
-    def set_climate_temperature(self) -> None:
+    def _update_climate_temperature(self) -> None:
         """Set the climate device temperature."""
         # Only control temperature if controller is active
         if not self.data["controller_active"]:
             return
 
-        target_temperature = self.data["setback_temperature"] if self.data[
-            "is_setback"] or self.data["forced_setback"] else self.data["normal_temperature"]
+        if self.data["is_setback"]:
+            target_temperature = self.data["setback_temperature"]
+        else:
+            target_temperature = self.data["normal_temperature"]
 
         self.hass.async_create_task(
             self.hass.services.async_call(
@@ -170,19 +171,34 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
             )
         )
 
-    def set_setback(self, is_setback: bool) -> None:
-        """Set setback."""
-        # Only allow setback changes if controller is active
-        if not self.data["controller_active"]:
-            return
+    def _calculate_setback_state(self) -> None:
+        """Calculate setback state."""
+        self.data["is_setback"] = (self.data["schedule_active"] or self.data["input_is_active"]
+                                   or self.data["forced_setback"]) and self.data["controller_active"]
+        self._update_climate_temperature()
 
-        # get schedule state as bool into variable
-        schedule_state = self.hass.states.get(self._schedule_device)
-        schedule_active = schedule_state.state == "on" or schedule_state.attributes.get(
-            "is_on", False)
+    def set_forced_setback(self, forced_setback: bool) -> None:
+        """Set forced setback."""
+        self.data["forced_setback"] = forced_setback
+        self._calculate_setback_state()
+        self.async_update_listeners()
 
-        self.data["is_setback"] = schedule_active or is_setback
-        self.set_climate_temperature()
+    def set_controller_active(self, active: bool) -> None:
+        """Set controller active state."""
+        self.data["controller_active"] = active
+        self._calculate_setback_state()
+        self.async_update_listeners()
+
+    def set_setback_temperature(self, temperature: float) -> None:
+        """Set setback temperature."""
+        self.data["setback_temperature"] = temperature
+        self._calculate_setback_state()
+        self.async_update_listeners()
+
+    def set_normal_temperature(self, temperature: float) -> None:
+        """Set normal temperature."""
+        self.data["normal_temperature"] = temperature
+        self._calculate_setback_state()
         self.async_update_listeners()
 
     @property
@@ -194,12 +210,6 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
     def forced_setback(self) -> bool:
         """Return if setback is forced (manual override)."""
         return self.data["forced_setback"]
-
-    def set_forced_setback(self, forced_setback: bool) -> None:
-        """Set forced setback."""
-        self.data["forced_setback"] = forced_setback
-        self.set_climate_temperature()
-        self.async_update_listeners()
 
     @property
     def setback_temperature(self) -> float:
@@ -240,17 +250,6 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
     def binary_input_device(self) -> str | None:
         """Return binary input device entity ID."""
         return self._binary_input
-
-    def set_controller_active(self, active: bool) -> None:
-        """Set controller active state."""
-        self.data["controller_active"] = active
-
-        # If controller is being deactivated, stop controlling temperature
-        if not active:
-            self.data["is_setback"] = False
-
-        self.set_setback(False)
-        self.async_update_listeners()
 
     @property
     def controller_active(self) -> bool:

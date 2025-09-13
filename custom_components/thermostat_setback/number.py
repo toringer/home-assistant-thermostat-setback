@@ -81,9 +81,7 @@ class SetbackTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Set the setback temperature."""
-        self.coordinator.data["setback_temperature"] = value
-        self.coordinator.set_climate_temperature()
-        self.coordinator.async_update_listeners()
+        self.coordinator.set_setback_temperature(value)
         self.async_write_ha_state()
 
     async def async_added_to_hass(self) -> None:
@@ -134,9 +132,7 @@ class NormalTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
 
     async def async_set_native_value(self, value: float) -> None:
         """Set the normal temperature."""
-        self.coordinator.data["normal_temperature"] = value
-        self.coordinator.set_climate_temperature()
-        self.coordinator.async_update_listeners()
+        self.coordinator.set_normal_temperature(value)
         self.async_write_ha_state()
 
     async def async_added_to_hass(self) -> None:
