@@ -155,11 +155,13 @@ class MyOptionsFlow(OptionsFlowWithReload):
             # Replace overlapping data in config_entry.data with user_input
             # user_input values take precedence over existing config_entry.data values
             updated_data = {**self.config_entry.data, **user_input}
+            if CONF_BINARY_INPUT not in user_input:
+                updated_data[CONF_BINARY_INPUT] = None
 
             # Update the config entry with the updated data
-            # self.hass.config_entries.async_update_entry(
-            #     self.config_entry, data=self.config_entry.options
-            # )
+            self.hass.config_entries.async_update_entry(
+                self.config_entry, data=updated_data
+            )
 
             # Clear options since they're now in data
             return self.async_create_entry(data=user_input)
