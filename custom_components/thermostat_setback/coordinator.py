@@ -82,6 +82,8 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
             [self._schedule_device],
             self._async_schedule_changed,
         )
+        self.data["schedule_active"] = self.hass.states.get(
+            self._schedule_device).state == "on"
 
         # Track binary input state changes if configured
         if self._binary_input:
