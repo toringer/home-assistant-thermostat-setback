@@ -38,7 +38,7 @@ class SetbackTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
     """Representation of a setback temperature number entity."""
 
     _attr_should_poll = False
-    _attr_mode = NumberMode.SLIDER
+    _attr_mode = NumberMode.AUTO
 
     def __init__(self, config_entry: ConfigEntry, coordinator: ClimateSetbackCoordinator) -> None:
         """Initialize the setback temperature number."""
