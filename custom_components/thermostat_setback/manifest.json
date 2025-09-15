@@ -2,7 +2,7 @@
   "domain": "thermostat_setback",
   "name": "Thermostat Setback Controller",
   "codeowners": [
-    "@toringe"
+    "@toringer"
   ],
   "config_flow": true,
   "dependencies": [],

@@ -10,7 +10,7 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = {text = "MIT"}
 authors = [
-    {name = "toringe", email = "toringe@example.com"},
+    {name = "toringer", email = "toringe@example.com"},
 ]
 keywords = ["home-assistant", "climate", "setback", "thermostat"]
 classifiers = [
