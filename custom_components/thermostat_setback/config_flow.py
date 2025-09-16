@@ -34,10 +34,7 @@ def get_initial_config_schema() -> vol.Schema:
             vol.Required(CONF_SCHEDULE_DEVICE, description={"suggested_value": "Select a schedule device to monitor"}): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain="schedule")
             ),
-            vol.Required(CONF_BINARY_INPUT, description={"suggested_value": "Select a binary input or switch for forced mode"}): selector.EntitySelector(
-                selector.EntitySelectorConfig(
-                    domain=["binary_sensor", "switch"])
-            ),
+            vol.Optional(CONF_BINARY_INPUT): cv.string,
         }
     )
 
@@ -49,10 +46,7 @@ def get_options_schema() -> vol.Schema:
             vol.Required(CONF_SCHEDULE_DEVICE, description={"suggested_value": "Select a schedule device to monitor"}): selector.EntitySelector(
                 selector.EntitySelectorConfig(domain="schedule")
             ),
-            vol.Required(CONF_BINARY_INPUT, description={"suggested_value": "Select a binary input or switch for forced mode"}): selector.EntitySelector(
-                selector.EntitySelectorConfig(
-                    domain=["binary_sensor", "switch"])
-            ),
+            vol.Optional(CONF_BINARY_INPUT): cv.string,
         }
     )
 
@@ -92,8 +86,8 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
 
         # Validate binary input if provided
         if CONF_BINARY_INPUT in user_input and user_input[CONF_BINARY_INPUT]:
-            binary_entity_id = user_input[CONF_BINARY_INPUT]
-            if not self.hass.states.get(binary_entity_id):
+            binary_entity_id = user_input[CONF_BINARY_INPUT].strip()
+            if binary_entity_id and not self.hass.states.get(binary_entity_id):
                 return self.async_show_form(
                     step_id="user",
                     data_schema=get_initial_config_schema(),
@@ -140,8 +134,8 @@ class MyOptionsFlow(OptionsFlowWithReload):
 
             # Validate binary input if provided
             if CONF_BINARY_INPUT in user_input and user_input[CONF_BINARY_INPUT]:
-                binary_entity_id = user_input[CONF_BINARY_INPUT]
-                if not self.hass.states.get(binary_entity_id):
+                binary_entity_id = user_input[CONF_BINARY_INPUT].strip()
+                if binary_entity_id and not self.hass.states.get(binary_entity_id):
                     current_data = {**self.config_entry.data,
                                     **self.config_entry.options}
                     return self.async_show_form(

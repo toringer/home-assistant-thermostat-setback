@@ -28,8 +28,7 @@
         "error": {
             "climate_device_not_found": "The selected climate device was not found. Please select a valid climate device.",
             "schedule_device_not_found": "The selected schedule device was not found. Please select a valid schedule device.",
-            "binary_input_not_found": "The selected binary input device was not found. Please select a valid binary sensor or switch.",
-            "invalid_temperature_range": "Setback temperature must be lower than normal temperature."
+            "binary_input_not_found": "The selected binary input device was not found. Please select a valid binary sensor or switch."
         },
         "abort": {
             "already_configured": "This thermostat setback controller is already configured."
@@ -48,6 +47,10 @@
                     "normal_temperature": "Normal Temperature"
                 }
             }
+        },
+        "error": {
+            "schedule_device_not_found": "The selected schedule device was not found. Please select a valid schedule device.",
+            "binary_input_not_found": "The selected binary input device was not found. Please select a valid binary sensor or switch."
         }
     }
 }
