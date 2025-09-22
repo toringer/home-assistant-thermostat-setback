@@ -102,15 +102,14 @@ class ConfigFlow(ConfigFlow, domain=DOMAIN):
         config_entry: ConfigEntry,
     ) -> MyOptionsFlow:
         """Create the options flow."""
-        return MyOptionsFlow(config_entry)
+        return MyOptionsFlow()
 
 
 class MyOptionsFlow(OptionsFlowWithReload):
     """Handle options flow for climate setback."""
 
-    def __init__(self, config_entry: ConfigEntry) -> None:
+    def __init__(self) -> None:
         """Initialize options flow."""
-        self.config_entry = config_entry
 
     async def async_step_init(
         self, user_input: dict[str, Any] | None = None
