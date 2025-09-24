@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import logging
 from typing import Any
+from datetime import datetime
 
 from homeassistant.components.climate import ATTR_TEMPERATURE
 from homeassistant.config_entries import ConfigEntry
@@ -59,6 +60,11 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
             "normal_temperature_min": 5.0,
             "normal_temperature_max": 35.0,
             "normal_temperature_step": 0.5,
+
+            # Recovery time tracking
+            "recovery_start_time": None,
+            "last_recovery_time": None,  # Single recovery time in seconds
+            "is_recovering": False,
         }
 
     async def _async_update_data(self) -> dict[str, Any]:
@@ -122,6 +128,26 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         if step:
             self.data["normal_temperature_step"] = step
 
+        # Check if we're recovering and have reached the normal temperature
+        if self.data["is_recovering"] and not self.data["is_setback"]:
+            current_temp = new_state.attributes.get("current_temperature")
+            target_temp = new_state.attributes.get("temperature")
+
+            if current_temp is not None and target_temp is not None:
+                # Consider temperature reached when current temp is equal or greater than target
+                if current_temp >= target_temp:
+                    # Recovery complete
+                    recovery_time = (
+                        datetime.now() - self.data["recovery_start_time"]).total_seconds()
+
+                    # Store the single recovery time
+                    self.data["last_recovery_time"] = round(recovery_time, 1)
+
+                    self.data["is_recovering"] = False
+                    self.data["recovery_start_time"] = None
+                    _LOGGER.debug(
+                        "Recovery completed in %.1f seconds", recovery_time)
+
         self._calculate_setback_state()
         self.async_update_listeners()
 
@@ -177,8 +203,17 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
 
     def _calculate_setback_state(self) -> None:
         """Calculate setback state."""
+        previous_setback = self.data["is_setback"]
         self.data["is_setback"] = (self.data["schedule_active"] or self.data["input_is_active"]
                                    or self.data["forced_setback"]) and self.data["controller_active"]
+
+        # Track when setback ends and recovery begins
+        if previous_setback and not self.data["is_setback"]:
+            # Setback just ended, start tracking recovery
+            self.data["recovery_start_time"] = datetime.now()
+            self.data["is_recovering"] = True
+            _LOGGER.debug("Setback ended, starting recovery time tracking")
+
         self._update_climate_temperature()
 
     def set_forced_setback(self, forced_setback: bool) -> None:
@@ -259,6 +294,21 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
     def controller_active(self) -> bool:
         """Return if controller is active."""
         return self.data["controller_active"]
+
+    @property
+    def last_recovery_time(self) -> float | None:
+        """Return the last recovery time in seconds."""
+        return self.data["last_recovery_time"]
+
+    @property
+    def is_recovering(self) -> bool:
+        """Return if currently recovering from setback."""
+        return self.data["is_recovering"]
+
+    @property
+    def recovery_start_time(self) -> datetime | None:
+        """Return when current recovery started."""
+        return self.data["recovery_start_time"]
 
     @property
     def device_info(self) -> DeviceInfo:
