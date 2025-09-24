@@ -25,6 +25,30 @@ Stop wrestling with complex Home Assistant automations for your thermostat! This
 </p>
 
 
+## Sensors Created
+
+The integration creates two sensors for monitoring:
+
+### 1. Setback Status Sensor
+- **Name**: "Setback Status" (or your custom name)
+- **Value**: `on` when setback is active, `off` when normal temperature is active
+- **Attributes**:
+  - `climate_device`: The controlled thermostat entity
+  - `schedule_device`: The schedule helper entity
+  - `binary_input_device`: Optional binary input for manual control
+
+### 2. Recovery Time Sensor
+Tracks how long it takes for temperature to reach normal after setback ends
+
+- **Name**: "Recovery Time"
+- **Value**: Time in seconds it took for the last recovery from setback to normal temperature
+- **Unit**: Seconds (s)
+- **Attributes**:
+  - `is_recovering`: `true` when currently recovering from setback, `false` otherwise
+
+
+
+
 ## Installation
 
 ### Method 1: HACS (Recommended)
