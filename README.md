@@ -36,7 +36,7 @@ The integration creates two sensors for monitoring:
 - **Attributes**:
   - `climate_device`: The controlled thermostat entity
   - `schedule_device`: The schedule helper entity
-  - `binary_input_device`: Optional binary input for manual control
+  - `binary_input_device`: Optional binary input that monitors any binary sensor or switch to activate forced setback. For example, monitor a house mode helper and force setback when vacation mode is active.
 
 ### 2. Recovery Time Sensor
 Tracks how long it takes for temperature to reach normal after setback ends
@@ -103,7 +103,7 @@ Skip the next scheduled setback cycle.
    - **Name**: Give it a friendly name (e.g., "Living Room Setback")
    - **Climate Device**: Pick your thermostat (e.g., `climate.living_room_thermostat`)
    - **Schedule Device**: Choose your schedule helper (defines when setback is active)
-   - **Forced Setback Monitoring Sensor**: Optional - use any switch/sensor for manual control forced setback
+   - **Forced Setback Monitoring Sensor**: Optional - monitors any binary sensor or switch to activate forced setback. For example, monitor a house mode helper and force setback when vacation mode is active.
 
 ### Step 2: That's It!
 
