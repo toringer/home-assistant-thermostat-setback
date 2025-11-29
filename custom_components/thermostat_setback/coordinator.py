@@ -65,6 +65,9 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
             "recovery_start_time": None,
             "last_recovery_time": None,  # Single recovery time in seconds
             "is_recovering": False,
+
+            # Skip setback feature
+            "skip_next_setback": False,
         }
 
     async def _async_update_data(self) -> dict[str, Any]:
@@ -158,9 +161,17 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         if new_state is None:
             return
 
+        previous_schedule_active = self.data["schedule_active"]
         # Activate setback if schedule is active
         self.data["schedule_active"] = new_state.state == "on" or new_state.attributes.get(
             "is_on", False)
+
+        # If schedule is becoming active and skip_next_setback is set, skip the setback
+        if not previous_schedule_active and self.data["schedule_active"] and self.data["skip_next_setback"]:
+            _LOGGER.debug("Skipping next setback cycle as requested")
+            self.data["skip_next_setback"] = False
+            # Notify listeners so the switch can update its state
+            self.async_update_listeners()
 
         self._calculate_setback_state()
         self.async_update_listeners()
@@ -204,8 +215,20 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
     def _calculate_setback_state(self) -> None:
         """Calculate setback state."""
         previous_setback = self.data["is_setback"]
-        self.data["is_setback"] = (self.data["schedule_active"] or self.data["input_is_active"]
-                                   or self.data["forced_setback"]) and self.data["controller_active"]
+
+        # Calculate if setback should be active
+        # Skip next setback overrides schedule and input, but forced_setback can still work
+        should_be_setback = False
+        if self.data["controller_active"]:
+            # Forced setback always works (manual override)
+            if self.data["forced_setback"]:
+                should_be_setback = True
+            # Schedule and input only work if skip_next_setback is not set
+            elif not self.data["skip_next_setback"]:
+                should_be_setback = (
+                    self.data["schedule_active"] or self.data["input_is_active"])
+
+        self.data["is_setback"] = should_be_setback
 
         # Track when setback ends and recovery begins
         if previous_setback and not self.data["is_setback"]:
@@ -237,6 +260,16 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
     def set_normal_temperature(self, temperature: float) -> None:
         """Set normal temperature."""
         self.data["normal_temperature"] = temperature
+        self._calculate_setback_state()
+        self.async_update_listeners()
+
+    def set_skip_next_setback(self, skip: bool) -> None:
+        """Set skip next setback flag."""
+        self.data["skip_next_setback"] = skip
+
+        # Recalculate state when skip flag changes
+        # If turning on skip and currently in setback (from schedule/input),
+        # this will immediately override to normal temperature
         self._calculate_setback_state()
         self.async_update_listeners()
 
@@ -309,6 +342,11 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
     def recovery_start_time(self) -> datetime | None:
         """Return when current recovery started."""
         return self.data["recovery_start_time"]
+
+    @property
+    def skip_next_setback(self) -> bool:
+        """Return if next setback should be skipped."""
+        return self.data["skip_next_setback"]
 
     @property
     def device_info(self) -> DeviceInfo:

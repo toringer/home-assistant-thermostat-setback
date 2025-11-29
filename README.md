@@ -18,6 +18,7 @@ Stop wrestling with complex Home Assistant automations for your thermostat! This
 - **One-Time Setup**: Configure once through the UI and it works forever
 - **Smart & Automatic**: Seamlessly switches between normal and setback temperatures based on your schedule
 - **Manual Control When Needed**: Override anytime with simple controls
+- **Skip Setback Feature**: Temporarily skip the next setback cycle when you need normal temperature
 - **External Integration**: Works with any binary sensor or switch for additional control
 
 <p align="center">
@@ -47,6 +48,34 @@ Tracks how long it takes for temperature to reach normal after setback ends
   - `is_recovering`: `true` when currently recovering from setback, `false` otherwise
 
 
+## Controls Created
+
+The integration creates three switches for manual control:
+
+### 1. Force Setback Switch
+Manually override to force setback mode on or off, regardless of schedule or other conditions.
+
+- **Name**: "Force Setback"
+- **State**: `on` when forced setback is active, `off` when not forced
+- **Usage**: Turn on to manually enable setback, turn off to return to automatic control
+
+### 2. Controller Active Switch
+Enable or disable the entire controller.
+
+- **Name**: "Controller Active"
+- **State**: `on` when controller is active, `off` when disabled
+- **Usage**: Turn off to completely disable temperature control, turn on to re-enable
+
+### 3. Skip Setback Switch
+Skip the next scheduled setback cycle.
+
+- **Name**: "Skip Setback"
+- **State**: `on` when skip is active, `off` when not skipping
+- **Usage**:
+  - Turn on to skip the next setback cycle when your schedule becomes active
+  - If currently in setback, turning this on will immediately return to normal temperature
+  - The flag automatically resets after the next setback cycle is skipped
+  - Useful for temporarily preventing setback when you know you'll be home or need normal temperature
 
 
 ## Installation

@@ -30,7 +30,8 @@ async def async_setup_entry(
     coordinator = hass.data[DOMAIN][config_entry.entry_id]["coordinator"]
     async_add_entities([
         ClimateForceSetbackSwitch(config_entry, coordinator),
-        ControllerSwitch(config_entry, coordinator)
+        ControllerSwitch(config_entry, coordinator),
+        SkipSetbackSwitch(config_entry, coordinator)
     ])
 
 
@@ -110,3 +111,47 @@ class ControllerSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
         if not state:
             return
         self.coordinator.data["controller_active"] = state.state
+
+
+class SkipSetbackSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
+    """Representation of a skip setback switch entity."""
+
+    _attr_should_poll = False
+
+    def __init__(self, config_entry: ConfigEntry, coordinator: ClimateSetbackCoordinator) -> None:
+        """Initialize the skip setback switch."""
+        super().__init__(coordinator, context=config_entry.entry_id)
+        self._config_entry = config_entry
+        self.coordinator = coordinator
+        self._attr_name = "Skip Setback"
+        self._attr_unique_id = f"thermostat_setback_skip_{config_entry.entry_id}"
+        self._attr_device_info = coordinator.device_info
+
+    @property
+    def is_on(self) -> bool:
+        """Return True if skip next setback is active."""
+        return self.coordinator.skip_next_setback
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Turn the switch on (enable skip next setback)."""
+        # If currently in setback, this will immediately override to normal temperature
+        # If currently in normal, this will mark the next setback cycle to be skipped
+        self.coordinator.set_skip_next_setback(True)
+        self.async_write_ha_state()
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Turn the switch off (disable skip next setback)."""
+        self.coordinator.set_skip_next_setback(False)
+        self.async_write_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        """Handle entity which will be added."""
+        await super().async_added_to_hass()
+
+        state = await self.async_get_last_state()
+        if state:
+            # Restore skip state if available
+            if state.state == "on":
+                self.coordinator.set_skip_next_setback(True)
+            else:
+                self.coordinator.set_skip_next_setback(False)
