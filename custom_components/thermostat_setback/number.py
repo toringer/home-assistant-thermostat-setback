@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from homeassistant.components.number import NumberEntity, NumberMode
+from homeassistant.components.number import NumberEntity, NumberMode, NumberDeviceClass
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -39,6 +39,7 @@ class SetbackTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
 
     _attr_should_poll = False
     _attr_mode = NumberMode.AUTO
+    _attr_device_class = NumberDeviceClass.TEMPERATURE
 
     def __init__(self, config_entry: ConfigEntry, coordinator: ClimateSetbackCoordinator) -> None:
         """Initialize the setback temperature number."""
@@ -47,7 +48,6 @@ class SetbackTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
         self.coordinator = coordinator
         self._attr_name = "Setback Temperature"
         self._attr_unique_id = f"thermostat_setback_temperature_{config_entry.entry_id}"
-        self._attr_native_unit_of_measurement = "°C"
         self._attr_device_info = coordinator.device_info
         self._attr_icon = "mdi:thermometer-low"
 
@@ -70,6 +70,11 @@ class SetbackTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
     def native_step(self) -> float:
         """Return the current setback temperature step."""
         return self.coordinator.normal_temperature_step
+
+    @property
+    def native_unit_of_measurement(self) -> str:
+        """Return the unit of measurement from the climate device."""
+        return self.coordinator.unit_of_measurement or "°C"
 
     @property
     def extra_state_attributes(self) -> dict[str, Any]:
@@ -106,6 +111,7 @@ class NormalTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
 
     _attr_should_poll = False
     _attr_mode = NumberMode.SLIDER
+    _attr_device_class = NumberDeviceClass.TEMPERATURE
 
     def __init__(self, config_entry: ConfigEntry, coordinator: ClimateSetbackCoordinator) -> None:
         """Initialize the normal temperature number."""
@@ -114,7 +120,6 @@ class NormalTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
         self.coordinator = coordinator
         self._attr_name = "Normal Temperature"
         self._attr_unique_id = f"climate_normal_temperature_{config_entry.entry_id}"
-        self._attr_native_unit_of_measurement = "°C"
         self._attr_device_info = coordinator.device_info
         self._attr_icon = "mdi:thermometer"
 
@@ -132,6 +137,11 @@ class NormalTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
     def native_step(self) -> float:
         """Return the current normal temperature step."""
         return self.coordinator.normal_temperature_step
+
+    @property
+    def native_unit_of_measurement(self) -> str:
+        """Return the unit of measurement from the climate device."""
+        return self.coordinator.unit_of_measurement or "°C"
 
     @property
     def native_value(self) -> float:

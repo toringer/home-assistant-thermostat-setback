@@ -60,6 +60,7 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
             "normal_temperature_min": 5.0,
             "normal_temperature_max": 35.0,
             "normal_temperature_step": 0.5,
+            "unit_of_measurement": None,
 
             # Recovery time tracking
             "recovery_start_time": None,
@@ -96,6 +97,17 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         if schedule_state is not None:
             self.data["schedule_active"] = schedule_state.state == "on"
 
+        # Initialize unit of measurement from climate device if available
+        climate_state = self.hass.states.get(self._climate_device)
+        if climate_state is not None:
+            unit = (
+                climate_state.attributes.get("unit_of_measurement") or
+                climate_state.attributes.get("temperature_unit") or
+                getattr(climate_state, "unit_of_measurement", None)
+            )
+            if unit:
+                self.data["unit_of_measurement"] = unit
+
         # Track binary input state changes if configured
         if self._binary_input:
             self._unsub_binary_input = async_track_state_change_event(
@@ -130,6 +142,16 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
             self.data["normal_temperature_max"] = max_temp
         if step:
             self.data["normal_temperature_step"] = step
+
+        # Get unit of measurement from the climate device
+        # Try multiple sources as different climate integrations may expose it differently
+        unit = (
+            new_state.attributes.get("unit_of_measurement") or
+            new_state.attributes.get("temperature_unit") or
+            getattr(new_state, "unit_of_measurement", None)
+        )
+        if unit:
+            self.data["unit_of_measurement"] = unit
 
         # Check if we're recovering and have reached the normal temperature
         if self.data["is_recovering"] and not self.data["is_setback"]:
@@ -347,6 +369,11 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
     def skip_next_setback(self) -> bool:
         """Return if next setback should be skipped."""
         return self.data["skip_next_setback"]
+
+    @property
+    def unit_of_measurement(self) -> str | None:
+        """Return unit of measurement from climate device."""
+        return self.data["unit_of_measurement"]
 
     @property
     def device_info(self) -> DeviceInfo:
