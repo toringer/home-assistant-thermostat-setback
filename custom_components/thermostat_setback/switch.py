@@ -69,9 +69,10 @@ class ClimateForceSetbackSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
         await super().async_added_to_hass()
 
         state = await self.async_get_last_state()
-        if not state:
+        if not state or not state.state:
             return
-        self.coordinator.data["is_setback"] = state.state
+        # Convert state string to boolean and restore using setter method
+        self.coordinator.set_forced_setback(state.state == "on")
 
 
 class ControllerSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
@@ -108,9 +109,10 @@ class ControllerSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
         await super().async_added_to_hass()
 
         state = await self.async_get_last_state()
-        if not state:
+        if not state or not state.state:
             return
-        self.coordinator.data["controller_active"] = state.state
+        # Convert state string to boolean and restore using setter method
+        self.coordinator.set_controller_active(state.state == "on")
 
 
 class SkipSetbackSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):

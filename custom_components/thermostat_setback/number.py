@@ -90,9 +90,15 @@ class SetbackTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
         await super().async_added_to_hass()
 
         state = await self.async_get_last_state()
-        if not state:
+        if not state or not state.state:
             return
-        self.coordinator.data["setback_temperature"] = state.state
+        try:
+            # Convert state string to float and restore using setter method
+            temperature = float(state.state)
+            self.coordinator.set_setback_temperature(temperature)
+        except (ValueError, TypeError):
+            # Invalid state value, skip restoration
+            return
 
 
 class NormalTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
@@ -142,6 +148,12 @@ class NormalTemperatureNumber(NumberEntity, CoordinatorEntity, RestoreEntity):
         await super().async_added_to_hass()
 
         state = await self.async_get_last_state()
-        if not state:
+        if not state or not state.state:
             return
-        self.coordinator.data["normal_temperature"] = state.state
+        try:
+            # Convert state string to float and restore using setter method
+            temperature = float(state.state)
+            self.coordinator.set_normal_temperature(temperature)
+        except (ValueError, TypeError):
+            # Invalid state value, skip restoration
+            return
