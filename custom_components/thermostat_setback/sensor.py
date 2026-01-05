@@ -5,7 +5,7 @@ from __future__ import annotations
 import logging
 from typing import Any
 
-from homeassistant.components.sensor import SensorEntity, SensorDeviceClass
+from homeassistant.components.sensor import SensorEntity, SensorDeviceClass, RestoreSensor
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
@@ -68,7 +68,7 @@ class ClimateSetbackSensor(SensorEntity, CoordinatorEntity):
         }
 
 
-class ClimateRecoveryTimeSensor(SensorEntity, CoordinatorEntity):
+class ClimateRecoveryTimeSensor(RestoreSensor, CoordinatorEntity):
     """Representation of a climate recovery time sensor entity."""
 
     _attr_should_poll = False
@@ -99,3 +99,18 @@ class ClimateRecoveryTimeSensor(SensorEntity, CoordinatorEntity):
         return {
             "is_recovering": self.coordinator.is_recovering,
         }
+
+    async def async_added_to_hass(self) -> None:
+        """Handle entity which will be added."""
+        await super().async_added_to_hass()
+
+        if (last_sensor_data := await self.async_get_last_sensor_data()) and (
+            last_native_value := last_sensor_data.native_value
+        ) is not None:
+            try:
+                # Convert native_value to float and restore to coordinator data
+                recovery_time = float(last_native_value)
+                self.coordinator.data["last_recovery_time"] = recovery_time
+            except (ValueError, TypeError):
+                # Invalid state value, skip restoration
+                return
