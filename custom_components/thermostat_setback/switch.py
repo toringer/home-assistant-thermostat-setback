@@ -31,7 +31,8 @@ async def async_setup_entry(
     async_add_entities([
         ClimateForceSetbackSwitch(config_entry, coordinator),
         ControllerSwitch(config_entry, coordinator),
-        SkipSetbackSwitch(config_entry, coordinator)
+        SkipSetbackSwitch(config_entry, coordinator),
+        InvertScheduleSwitch(config_entry, coordinator),
     ])
 
 
@@ -157,3 +158,42 @@ class SkipSetbackSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
                 self.coordinator.set_skip_next_setback(True)
             else:
                 self.coordinator.set_skip_next_setback(False)
+
+
+class InvertScheduleSwitch(SwitchEntity, CoordinatorEntity, RestoreEntity):
+    """Representation of an invert schedule switch entity."""
+
+    _attr_should_poll = False
+
+    def __init__(self, config_entry: ConfigEntry, coordinator: ClimateSetbackCoordinator) -> None:
+        """Initialize the invert schedule switch."""
+        super().__init__(coordinator, context=config_entry.entry_id)
+        self._config_entry = config_entry
+        self.coordinator = coordinator
+        self._attr_name = "Invert Schedule"
+        self._attr_unique_id = f"thermostat_setback_invert_schedule_{config_entry.entry_id}"
+        self._attr_device_info = coordinator.device_info
+
+    @property
+    def is_on(self) -> bool:
+        """Return True if schedule logic is inverted (schedule active → disable setback)."""
+        return self.coordinator.invert_schedule
+
+    async def async_turn_on(self, **kwargs: Any) -> None:
+        """Turn the switch on (invert schedule: schedule active → disable setback)."""
+        self.coordinator.set_invert_schedule(True)
+        self.async_write_ha_state()
+
+    async def async_turn_off(self, **kwargs: Any) -> None:
+        """Turn the switch off (normal: schedule active → enable setback)."""
+        self.coordinator.set_invert_schedule(False)
+        self.async_write_ha_state()
+
+    async def async_added_to_hass(self) -> None:
+        """Handle entity which will be added."""
+        await super().async_added_to_hass()
+
+        state = await self.async_get_last_state()
+        if not state or not state.state:
+            return
+        self.coordinator.set_invert_schedule(state.state == "on")

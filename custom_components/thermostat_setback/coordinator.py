@@ -70,6 +70,9 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
 
             # Skip setback feature
             "skip_next_setback": False,
+
+            # Invert schedule: when True, schedule active → disable setback
+            "invert_schedule": False,
         }
 
     async def _async_update_data(self) -> dict[str, Any]:
@@ -185,12 +188,14 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
             return
 
         previous_schedule_active = self.data["schedule_active"]
-        # Activate setback if schedule is active
+        # Activate setback if schedule is active (or inverted: active = disable setback)
         self.data["schedule_active"] = new_state.state == "on" or new_state.attributes.get(
             "is_on", False)
 
-        # If schedule is becoming active and skip_next_setback is set, skip the setback
-        if not previous_schedule_active and self.data["schedule_active"] and self.data["skip_next_setback"]:
+        # If schedule is transitioning to "contributes to setback" and skip_next_setback is set, clear skip
+        previous_contributes = previous_schedule_active != self.data["invert_schedule"]
+        now_contributes = self.data["schedule_active"] != self.data["invert_schedule"]
+        if not previous_contributes and now_contributes and self.data["skip_next_setback"]:
             _LOGGER.debug("Skipping next setback cycle as requested")
             self.data["skip_next_setback"] = False
             # Notify listeners so the switch can update its state
@@ -257,6 +262,8 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
 
         # Calculate if setback should be active
         # Skip next setback overrides schedule and input, but forced_setback can still work
+        # When invert_schedule is True: schedule active → disable setback (schedule contributes when schedule is OFF)
+        schedule_contributes = self.data["schedule_active"] != self.data["invert_schedule"]
         should_be_setback = False
         if self.data["controller_active"]:
             # Forced setback always works (manual override)
@@ -264,8 +271,7 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
                 should_be_setback = True
             # Schedule and input only work if skip_next_setback is not set
             elif not self.data["skip_next_setback"]:
-                should_be_setback = (
-                    self.data["schedule_active"] or self.data["input_is_active"])
+                should_be_setback = schedule_contributes or self.data["input_is_active"]
 
         self.data["is_setback"] = should_be_setback
 
@@ -309,6 +315,12 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         # Recalculate state when skip flag changes
         # If turning on skip and currently in setback (from schedule/input),
         # this will immediately override to normal temperature
+        self._calculate_setback_state()
+        self.async_update_listeners()
+
+    def set_invert_schedule(self, value: bool) -> None:
+        """Set invert schedule flag (schedule active → disable setback when True)."""
+        self.data["invert_schedule"] = value
         self._calculate_setback_state()
         self.async_update_listeners()
 
@@ -386,6 +398,11 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
     def skip_next_setback(self) -> bool:
         """Return if next setback should be skipped."""
         return self.data["skip_next_setback"]
+
+    @property
+    def invert_schedule(self) -> bool:
+        """Return if schedule logic is inverted (schedule active → disable setback)."""
+        return self.data["invert_schedule"]
 
     @property
     def unit_of_measurement(self) -> str | None:
