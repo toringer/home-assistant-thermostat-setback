@@ -9,6 +9,7 @@ from datetime import datetime
 from homeassistant.components.climate import ATTR_TEMPERATURE
 from homeassistant.config_entries import ConfigEntry
 from homeassistant.core import HomeAssistant, callback
+from homeassistant.exceptions import ServiceNotFound
 from homeassistant.helpers.device_registry import DeviceInfo
 from homeassistant.helpers.event import async_track_state_change_event
 from homeassistant.helpers.update_coordinator import DataUpdateCoordinator
@@ -212,10 +213,33 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
         self._calculate_setback_state()
         self.async_update_listeners()
 
+    async def _async_call_set_temperature(self, target_temperature: float) -> None:
+        """Call climate.set_temperature; catch ServiceNotFound if not registered yet."""
+        try:
+            await self.hass.services.async_call(
+                "climate",
+                "set_temperature",
+                {
+                    "entity_id": self._climate_device,
+                    ATTR_TEMPERATURE: target_temperature,
+                },
+            )
+        except ServiceNotFound:
+            _LOGGER.debug(
+                "Climate set_temperature not available yet (e.g. climate entity not loaded), skipping"
+            )
+
     def _update_climate_temperature(self) -> None:
         """Set the climate device temperature."""
         # Only control temperature if controller is active
         if not self.data["controller_active"]:
+            return
+
+        # Skip if climate entity not yet available
+        if self.hass.states.get(self._climate_device) is None:
+            _LOGGER.debug(
+                "Climate device not available yet, skipping temperature update"
+            )
             return
 
         if self.data["is_setback"]:
@@ -224,14 +248,7 @@ class ClimateSetbackCoordinator(DataUpdateCoordinator):
             target_temperature = self.data["normal_temperature"]
 
         self.hass.async_create_task(
-            self.hass.services.async_call(
-                "climate",
-                "set_temperature",
-                {
-                    "entity_id": self._climate_device,
-                    ATTR_TEMPERATURE: target_temperature,
-                },
-            )
+            self._async_call_set_temperature(target_temperature)
         )
 
     def _calculate_setback_state(self) -> None:
