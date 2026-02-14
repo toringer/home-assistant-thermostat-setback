@@ -19,6 +19,7 @@ Stop wrestling with complex Home Assistant automations for your thermostat! This
 - **Smart & Automatic**: Seamlessly switches between normal and setback temperatures based on your schedule
 - **Manual Control When Needed**: Override anytime with simple controls
 - **Skip Setback Feature**: Temporarily skip the next setback cycle when you need normal temperature
+- **Invert Schedule**: Flip schedule logic when your schedule defines "home" instead of "away"
 - **External Integration**: Works with any binary sensor or switch for additional control
 
 <p align="center">
@@ -50,7 +51,7 @@ Tracks how long it takes for temperature to reach normal after setback ends
 
 ## Controls Created
 
-The integration creates three switches for manual control:
+The integration creates four switches for manual control:
 
 ### 1. Force Setback Switch
 Manually override to force setback mode on or off, regardless of schedule or other conditions.
@@ -76,6 +77,17 @@ Skip the next scheduled setback cycle.
   - If currently in setback, turning this on will immediately return to normal temperature
   - The flag automatically resets after the next setback cycle is skipped
   - Useful for temporarily preventing setback when you know you'll be home or need normal temperature
+
+### 4. Invert Schedule Switch
+Flip the schedule logic so setback is active when the schedule is *inactive* instead of active.
+
+- **Name**: "Invert Schedule"
+- **State**: `on` when inverted, `off` when using normal logic
+- **Usage**:
+  - Turn on when your schedule defines "when you're home" (e.g., 9am–5pm) instead of "when you're away"
+  - **Normal** (`off`): schedule active → setback on; schedule inactive → setback off
+  - **Inverted** (`on`): schedule active → setback off; schedule inactive → setback on
+  - Useful when your schedule helper represents "home" or "occupied" periods rather than "away" periods
 
 
 ## Installation
